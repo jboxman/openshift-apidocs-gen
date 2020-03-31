@@ -7,12 +7,18 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "hack-gen": "node hack/gen.js openshift-latest.json",
+    "doc": "npm run-script hack-gen && asciidoctor -d book build/index.adoc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "handlebars": "^4.5.3",
     "js-yaml": "^3.13.1"
+  },
+  "devDependencies": {
+    "jest": "^24.9.0"
   }
 }
