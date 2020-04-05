@@ -3,14 +3,15 @@ const test = require('tape');
 const {
   walkProps,
   getPropertiesByPath
-} = require('./');
-
-const { definitions } = require('../openshift-openapi-spec-4.4.0.json');
-const testSpec = require('./specs/prometheus-spec.json');
-//const props = { 'io.k8s.api.core.v1.Pod': definitions['io.k8s.api.core.v1.Pod'] };
+} = require('../lib/properties');
 
 test('getPropertiesByPath', t => {
+  t.plan(8);
+
   let props;
+
+  const { definitions } = require('./specs/prometheus-spec.json');
+  const testSpec = definitions['com.coreos.monitoring.v1.Prometheus'];
   const flatPropsOfResource = walkProps({ data: testSpec, definitions });
 
   // Get all properties for a path
@@ -61,29 +62,27 @@ test('getPropertiesByPath', t => {
 });
 
 test('flatten definition properties', t => {
-  const nestedProps = {
-    top: {
-      description: "text",
-      type: "object",
-      properties: {
-        key1: {
-          description: "key1",
-          type: "string"
-        },
-        key2: {
-          description: "array",
-          type: "array",
-          items: {
-            description: "item",
-            type: "string"
-          }
-        }
-      }
-    }
-  }
+  let definitions;
+  let testSpec;
+  let flatProps;
 
-  //const result = walkProps({ data: nestedProps });
-  //console.log(JSON.stringify(result, null, 2));
+  ({ definitions } = require('./specs/prometheus-spec.json'));
+  testSpec = definitions['com.coreos.monitoring.v1.Prometheus'];
+
+  flatProps = walkProps({ data: testSpec, definitions });
+
+  t.equal(
+    Object.keys(flatProps).length,
+    1099);
+
+  ({ definitions } = require('./specs/storageclass-spec.json'));
+  testSpec = definitions['io.k8s.api.storage.v1.StorageClass'];
+
+  flatProps = walkProps({ data: testSpec, definitions });
+
+  t.equal(
+    Object.keys(flatProps).length,
+    48);
 
   t.end();
 });
