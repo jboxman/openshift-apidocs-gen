@@ -13,69 +13,45 @@ const assemblyTemplate = tmpl.compile(`
 
 {{#with (findDefinitionByKey definition)}}
 
-[NOTE]
-====
-.Appears in
-{{#each appearsIn}}
-{{#with (findDefinitionByKey .)}}
-* {{kind}} [{{group}}/{{version}}]
-{{/with}}
-{{/each}}
-====
+{{description}}
 
 === Definitions
 
-==== {{name}} [{{version}}/{{group}}]
+==== {{name}} [{{group}}/{{version}}]
 
-The following table describes the parameters for the {{name}} object:
+The following table describes the parameters for a \`{{name}}\` object:
 
 [cols="1,1,1",options="header"]
 |===
-| Field | Type | Description
-{{#each fields}}
-| \`{{name}}\`
+| Property | Type | Description
+
+{{#each (flatPropertiesForTable flatProperties)}}
+| \`{{property}}\`
 | {{type}}
-| {{{shorter description}}}
+| {{{escapeMarkup description}}}
+
 {{/each}}
 |===
 
-{{#each inlineDefs}}
+{{#each relatedProperties}}
 {{#with (findDefinitionByKey .)}}
 ==== {{kind}} [{{version}}/{{group}}]
 
-The following table describes the parameters for {{kind}} object:
+The following table describes the parameters for a \`{{kind}}\` object:
 
 [cols="1,1,1",options="header"]
 |===
-| Field | Type | Description
-{{#each fields}}
-| \`{{name}}\`
+
+| Property | Type | Description
+{{#each (flatPropertiesForTable flatProperties)}}
+| \`{{property}}\`
 | {{type}}
-| {{{shorter description}}}
+| {{{escapeMarkup description}}}
+
 {{/each}}
 |===
 {{/with}}
 {{/each}}
-
-{{#with (withoutInline (descendDependsOn key2) inlineDefs)}}
-{{#each .}}
-{{#with (findDefinitionByKey .)}}
-==== {{kind}} [{{version}}/{{group}}]
-
-The following table describes the parameters for {{kind}} object:
-
-[cols="1,1,1",options="header"]
-|===
-| Field | Type | Description
-{{#each fields}}
-| \`{{name}}\`
-| {{type}}
-| {{{shorter description}}}
-{{/each}}
-|===
-{{/with}}
-{{/each}}
-{{/with}}
 
 === Operations
 

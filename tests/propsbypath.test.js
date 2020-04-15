@@ -60,29 +60,3 @@ test('getPropertiesByPath', t => {
 
   t.end();
 });
-
-test('flatten definition properties', t => {
-  let definitions;
-  let testSpec;
-  let flatProps;
-
-  ({ definitions } = require('./specs/prometheus-spec.json'));
-  testSpec = definitions['com.coreos.monitoring.v1.Prometheus'];
-
-  flatProps = walkProps({ data: testSpec, definitions });
-
-  t.equal(
-    Object.keys(flatProps).length,
-    1099);
-
-  ({ definitions } = require('./specs/storageclass-spec.json'));
-  testSpec = definitions['io.k8s.api.storage.v1.StorageClass'];
-
-  flatProps = walkProps({ data: testSpec, definitions });
-
-  t.equal(
-    Object.keys(flatProps).length,
-    48);
-
-  t.end();
-});
