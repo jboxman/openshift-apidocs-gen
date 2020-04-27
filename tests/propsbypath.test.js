@@ -6,7 +6,7 @@ const {
 } = require('../lib/properties');
 
 test('getPropertiesByPath', t => {
-  t.plan(8);
+  t.plan(9);
 
   let props;
 
@@ -57,6 +57,38 @@ test('getPropertiesByPath', t => {
   t.equal(
     props.includes('.metadata'),
     true);
+
+  const wantPaths = [
+    '.spec',
+    '.spec.affinity',
+    '.spec.affinity.nodeAffinity',
+    '.spec.affinity.podAffinity',
+    '.spec.affinity.podAntiAffinity',
+    '.spec.volumes[]',
+    '.spec.tolerations[]',
+    '.spec.storage',
+    '.spec.serviceMonitorNamespaceSelector',
+    '.spec.remoteWrite[]',
+    '.spec.remoteRead[]',
+    '.spec.podMonitorNamespaceSelector',
+    '.spec.initContainers[]',
+    '.spec.containers[]',
+    '.spec.apiserverConfig',
+    '.spec.alerting',
+  ];
+  const propertiesByPath = wantPaths.reduce((accum, path) => {
+    return {
+      ...accum,
+      [path]: getPropertiesByPath({ properties: flatPropsOfResource, otherPaths: wantPaths, reqPath: path })
+    };
+  }, {});
+
+  //console.log(JSON.stringify(propertiesByPath, null, 2))
+
+  t.equal(
+    Object.values(propertiesByPath).every(array => array.length > 0),
+    true
+  );
 
   t.end();
 });
