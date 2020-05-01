@@ -1,130 +1,52 @@
-const tmpl = require('handlebars');
+const fs = require('fs').promises; // TODO - experimental API
+const dir = require('node-dir');
+const path = require('path');
 
-// TODO -
-// Need to either resursively descend dependsOn
-// or link to an index of all related definitions
+const partialsDir = path.join(__dirname, 'partials');
+const pagesDir = path.join(__dirname, 'pages');
+const tmplRegex = /\.hbs$/i;
 
-const assemblyTemplate = tmpl.compile(`
-{{#each .}}
-= {{name}}
+const toCamel = filename =>
+  filename
+    .split('-')
+    .map((part, idx) => idx == 0 ? part : part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
 
-{{#each resources}}
-== {{name}} {{version}} {{group}}
+async function registerPartials(Handlebars) {
+  const templateFiles = await dir.promiseFiles(partialsDir)
+    .then(function(files) {
+      return files
+        .filter(file => tmplRegex.test(file))
+        .reduce((dict, filename) => {
+          return {
+            ...dict,
+            ...{ [toCamel(path.basename(filename, '.hbs'))]: filename }
+          }
+        }, {});
+    });
 
-{{#with (findDefinitionByKey definition)}}
+  for(const [ partialName, partialFilename ] of Object.entries(templateFiles)) {
+    let partial = '';
+    try {
+      partial = await fs.readFile(partialFilename, { encoding: 'utf8' });
+    }
+    catch(e) { console.log(e); }
 
-{{description}}
+    Handlebars.registerPartial(partialName, partial);
+  }
+}
 
-=== Definitions
+async function compilePage(Handlebars, pageFile='resources.hbs') {
+  let page = '';
+  try {
+    page = await fs.readFile(path.join(pagesDir, pageFile), { encoding: 'utf8' });
+  }
+  catch(e) { console.log(e); }
 
-==== {{name}} [{{group}}/{{version}}]
-
-The following table describes the parameters for a \`{{name}}\` object:
-
-[cols="1,1,1",options="header"]
-|===
-| Property | Type | Description
-
-{{#each (flatPropertiesForTable flatProperties)}}
-| \`{{property}}\`
-| {{type}}
-| {{{escapeMarkup description}}}
-
-{{/each}}
-|===
-
-{{#each relatedProperties}}
-{{#with (findDefinitionByKey .)}}
-==== {{kind}} [{{version}}/{{group}}]
-
-The following table describes the parameters for a \`{{kind}}\` object:
-
-[cols="1,1,1",options="header"]
-|===
-
-| Property | Type | Description
-{{#each (flatPropertiesForTable flatProperties)}}
-| \`{{property}}\`
-| {{type}}
-| {{{escapeMarkup description}}}
-
-{{/each}}
-|===
-{{/with}}
-{{/each}}
-
-=== Operations
-
-{{#each operationCategories}}
-==== {{name}}
-
-{{#each operations}}
-
-===== {{operationTypeName}}
-{{{description}}}
-
-.HTTP request
-\`{{httpMethod}}\` \`{{path}}\`
-
-{{#if bodyParams}}
-.HTTP body
-[cols="1,1",options="header"]
-|===
-| Object | Type
-{{#each bodyParams}}
-| \`{{name}}\`
-| {{type}}
-{{/each}}
-|===
-{{/if}}
-
-{{#if pathParams}}
-.Path parameters
-[cols="1,1",options="header"]
-|===
-| Parameter | Description
-{{#each pathParams}}
-| \`{{name}}\`
-| {{{shorter description}}}
-{{/each}}
-|===
-{{/if}}
-
-{{#if queryParams}}
-.Query parameters
-[cols="1,1",options="header"]
-|===
-| Parameter | Description
-{{#each queryParams}}
-| \`{{name}}\`
-| {{{shorter description}}}
-{{/each}}
-|===
-{{/if}}
-
-{{#if httpResponses}}
-.HTTP responses
-[cols="1,1",options="header"]
-|===
-| Code | Type
-{{#each httpResponses}}
-| {{code}} - {{{description}}}
-| {{type}}
-{{/each}}
-|===
-{{/if}}
-
-{{/each}}
-
-{{/each}}
-
-{{/with}}
-
-{{/each}}
-
-{{/each}}
-`);
+  return Handlebars.compile(page);
+}
 
 module.exports = {
-  assemblyTemplate
+  registerPartials,
+  compilePage
 };

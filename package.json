@@ -17,7 +17,8 @@
   "license": "ISC",
   "dependencies": {
     "handlebars": "^4.5.3",
-    "js-yaml": "^3.13.1"
+    "js-yaml": "^3.13.1",
+    "node-dir": "^0.1.17"
   },
   "devDependencies": {
     "esm": "^3.2.25",
