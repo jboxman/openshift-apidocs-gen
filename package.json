@@ -8,14 +8,13 @@
   },
   "scripts": {
     "test": "tape tests/**/*.test.js",
-    "testx": "node tests/walk-props.test.js",
-    "hack-gen": "node hack/gen.js openshift-latest.json",
-    "doc": "npm run-script hack-gen && asciidoctor -d book build/index.adoc"
+    "doc": "asciidoctor -d book build/index.adoc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "commander": "^5.1.0",
     "handlebars": "^4.5.3",
     "js-yaml": "^3.13.1",
     "node-dir": "^0.1.17"
