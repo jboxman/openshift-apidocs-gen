@@ -1,0 +1,30 @@
+== {{name}} {{version}} {{group}}
+
+{{#with (findDefinitionByKey definition)}}
+
+{{description}}
+
+=== Definitions
+
+==== {{kind}} [{{group}}/{{version}}]
+
+{{>propertiesTable .}}
+
+{{#each relatedProperties}}
+{{#with (findDefinitionByKey .)}}
+==== {{kind}} [{{version}}/{{group}}]
+
+{{>propertiesTable .}}
+
+{{/with}}
+{{/each}}
+
+=== Operations
+
+{{#each operationCategories}}
+
+{{>operationCategory .}}
+
+{{/each}}
+
+{{/with}}
