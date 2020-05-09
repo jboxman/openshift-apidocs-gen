@@ -8,43 +8,51 @@ const loadConfig = require('../lib/config');
 // available versions. With sorting, the latest
 // version is probably what is offered in OCP-latest.
 
+// $ oc api-resources | hack/get-versions-from-gk.js ...
+
 if(! process.argv[2])
   process.exit(1);
 
+// TODO - load definitions only
 // This bootstraps the entire configuration, including operations and fields
 const { definitions } = loadConfig({ specFile: process.argv[2] });
-let rows;
-
-// NAME,SHORTNAMES,APIGROUP,NAMESPACED,KIND
-// localsubjectaccessreviews,,authorization.k8s.io,TRUE,LocalSubjectAccessReview
 
 async function main() {
-  rows = await readStream(process.stdin);
+  let rows = await readStream(process.stdin);
+  let columnOffsets;
 
   if(! rows)
     process.exit(1);
 
   for(const row of rows) {
-    if(row == rows[0])
+    if(row == rows[0]) {
+      columnOffsets = getOffsets(row);
+      continue;
+    }
+    if(row.length <= 1)
       continue;
 
-    let [ , , group, , kind] = row.trim().split(/\t/);
+    let group = row.substring(columnOffsets[2].start, columnOffsets[2].stop).replace(/\s/g, '');
+    let kind = row.substring(columnOffsets[4].start, row.length).replace(/\s/g, '');
 
+    // The core group presents as an empty field
+    // https://kubernetes.io/docs/reference/using-api/api-overview/#api-groups
     if(!group)
       group = 'core';
 
-    // These aren't fully qualified internally.
-    if(/k8s\.io/.test(group))
+    // These aren't fully qualified internally. (except snapshot.storage.k8s.io)
+    if(/k8s\.io/.test(group) && group != 'snapshot.storage.k8s.io')
       group = group.split(/\./)[0];
 
     const defs = definitions.getByGroupKind({ group, kind });
 
     // Not currently sorted; it's accidentally correct version order.
+    //console.log(defs);
     if(defs.length > 0) {
       console.log(`- name: ${kind}\n  version: ${defs[0].version}\n  group: ${group}`);
     }
     else {
-      console.log(`Invalid group (${kind}): ${group}`);
+      console.log(`Could not find ${kind}/${group}`);
     }
   }
 }
@@ -63,4 +71,40 @@ function readStream(stream, encoding = "utf8") {
     stream.on("end", () => resolve(data.split(/\n/)));
     stream.on("error", error => reject(error));
   });
+}
+
+function getOffsets(row) {
+  const columns = {};
+  let begin = false;
+  let columnIdx = 0;
+
+  for(let i = 0; i < row.length; i++) {
+
+    if(begin && (i == (row.length - 1) || !/[A-Z]/.test(row[i]))) {
+
+      if(i == (row.length - 1) || /[A-Z]/.test(row[i+1])) {
+        begin = false;
+
+        columns[columnIdx] = {
+          ...columns[columnIdx],
+          stop: i
+        };
+
+        columnIdx++;
+      }
+
+      continue;
+    }
+
+    if(!begin && /[A-Z]/.test(row[i])) {
+      columns[columnIdx] = {
+        ...columns[columnIdx],
+        start: i
+      };
+
+      begin = true;
+    }
+  }
+
+  return columns;
 }
