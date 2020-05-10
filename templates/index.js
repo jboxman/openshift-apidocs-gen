@@ -36,10 +36,10 @@ async function registerPartials(Handlebars) {
   }
 }
 
-async function compilePage(Handlebars, pageFile='resources.hbs') {
+async function compilePage(Handlebars, pageFile='index') {
   let page = '';
   try {
-    page = await fs.readFile(path.join(pagesDir, pageFile), { encoding: 'utf8' });
+    page = await fs.readFile(path.join(pagesDir, `${pageFile}.hbs`), { encoding: 'utf8' });
   }
   catch(e) { console.log(e); }
 
