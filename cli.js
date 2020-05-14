@@ -7,7 +7,7 @@ async function main() {
     await cli().start();
   }
   catch(e) {
-    console.log(`Unhandled error:\n\n${JSON.stringify(e, null, 2)}`);
+    console.log(e);
     process.exit(1);
   }
 }

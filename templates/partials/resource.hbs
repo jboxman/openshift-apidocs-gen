@@ -1,23 +1,24 @@
-== {{name}} {{version}} {{group}}
+== {{name}} [{{group}}/{{version}}]
 
-{{#with (findDefinitionByKey definition)}}
+{{!--#with (findDefinitionByKey definition)--}}
 
-{{description}}
+Description::
+  {{description}}
 
-=== Definitions
-
-==== {{kind}} [{{group}}/{{version}}]
-
-{{>propertiesTable .}}
-
-{{#each relatedProperties}}
-{{#with (findDefinitionByKey .)}}
-==== {{kind}} [{{version}}/{{group}}]
+Type::
+  `{{type}}`
 
 {{>propertiesTable .}}
 
-{{/with}}
-{{/each}}
+{{!--#each relatedProperties--}}
+{{!--#with (findDefinitionByKey .)--}}
+
+// ==== {{kind}} [{{version}}/{{group}}]
+
+{{!-->propertiesTable .--}}
+
+{{!--/with--}}
+{{!--/each--}}
 
 === Operations
 
@@ -27,4 +28,4 @@
 
 {{/each}}
 
-{{/with}}
+{{!--/with--}}

@@ -1,10 +1,10 @@
-The following table describes the parameters for the `{{kind}}` object:
+The following table describes the parameters for the `{{name}}` object:
 
 [cols="1,1,1",options="header"]
 |===
 | Property | Type | Description
 
-{{#each (flatPropertiesForTable flatProperties)}}
+{{#each (flatPropertiesForTable flatSpec)}}
 | `{{property}}`
 | {{type}}
 | {{{escapeMarkup description}}}

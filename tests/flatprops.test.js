@@ -4,7 +4,10 @@ const {
   walkProps
 } = require('../lib/properties');
 
-test('flatten definition properties', t => {
+// TODO - process multiple specs from the same file
+// to watch the deep clone / reference problem of modifying definitions
+
+test('flatten definition spec', t => {
   let definitions;
   let testSpec;
   let flatProps;
@@ -17,6 +20,7 @@ test('flatten definition properties', t => {
   t.equal(
     Object.keys(flatProps).length,
     1051);
+
   // A string or integer must not be explicitly named
   /*
   "portals": {
@@ -27,6 +31,7 @@ test('flatten definition properties', t => {
     }
   },
   */
+
   t.equal(
     flatProps.hasOwnProperty('.spec.volumes[].iscsi.portals{}'),
     false);
@@ -36,6 +41,17 @@ test('flatten definition properties', t => {
   t.equal(
     flatProps.hasOwnProperty('.spec.volumes[].iscsi.portals'),
     true);
+
+  t.equal(
+    typeof flatProps['.metadata.annotations'].description,
+    'string');
+  t.equal(
+    (flatProps['.metadata.annotations'].description || '').length > 0,
+    true);
+
+  t.equal(
+    flatProps['.metadata.annotations'].type,
+    'object (string)');
 
   ({ definitions } = require('./specs/storageclass-spec.json'));
   testSpec = definitions['io.k8s.api.storage.v1.StorageClass'];
