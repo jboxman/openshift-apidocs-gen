@@ -19,6 +19,10 @@
 - rule: "com.github.operator-framework"
   match: com\.github\.operator-framework\..+(?:(operators|apps))\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
   groupOverride: packages.operators.coreos.com
+# com.github.operator-framework.operator-lifecycle-manager.pkg.lib.version.OperatorVersion
+- rule: "com.github.operator-framework.operator-lifecycle-manager.pkg.lib.version.OperatorVersion"
+  match: com\.github\.operator-framework\..+\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
+  groupOverride: packages.operators.coreos.com
 # io.k8s.storage.snapshot.v1beta1.VolumeSnapshot
 - rule: io.k8s.storage.snapshot
   match: io\.k8s\.storage\.(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
@@ -29,13 +33,30 @@
 # io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1beta1.CustomResourceDefinitionVersion
 - rule: "io.k8s.apiextensions-apiserver"
   match: io\.k8s\..+(?:apis\.)?\.(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
+  groupOverride: <group>.k8s.io
 # io.k8s.kube-aggregator.pkg.apis.apiregistration.v1beta1.ServiceReference
 - rule: "io.k8s.kube-aggregator"
   match: io\.k8s\..+(?:apis\.)?\.(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
+
+# These are legacy groups
+# io.k8s.api.apps.v1.ControllerRevisionList
+# io.k8s.api.batch.v1beta1.CronJobList
+# io.k8s.api.extensions.v1beta1.Ingress
+# io.k8s.api.policy.v1beta1.PodDisruptionBudget
+# io.k8s.api.rbac.v1.ClusterRoleBinding
+
+# Full domain
 # io.k8s.api.authorization.v1beta1.SelfSubjectAccessReview
+
+# io.k8s.kube-aggregator.pkg.apis.apiregistration.v1.APIService
+
+# io.k8s.api.core.v1.Binding
+- rule: "io.k8s.api.core"
+  match: io\.k8s\.api\.?(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
 # io.k8s.migration.v1alpha1.StorageStateList
 - rule: "io.k8s"
   match: io\.k8s\.(?:api\.)?(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
+  groupOverride: <group>.k8s.io
 # io.openshift.operator.imageregistry.v1.Config
 - rule: io.openshift.operator
   match: io\.openshift\.operator\.(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
