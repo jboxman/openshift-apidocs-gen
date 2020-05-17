@@ -40,10 +40,6 @@ async function main() {
     if(!group)
       group = 'core';
 
-    // These aren't fully qualified internally. (except snapshot.storage.k8s.io)
-    if(/k8s\.io/.test(group) && group != 'snapshot.storage.k8s.io')
-      group = group.split(/\./)[0];
-
     const defs = definitions.getByGroupKind({ group, kind });
 
     // Not currently sorted; it's accidentally correct version order.
