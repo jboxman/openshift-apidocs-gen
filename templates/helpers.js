@@ -3,6 +3,19 @@ const escapeMarkup = (text = '') => {
   return text.replace(/[|]/g, '\\|');
 };
 
+const hasChildren = children => {
+  if(Array.isArray(children) && children.length > 0)
+    return true;
+
+  return false;
+};
+
+const truncatePath = (path, parent) => {
+  return path.replace(`${parent}.`, '');
+};
+
+const notRoot = key => key == '.' ? false : true;
+
 const flatPropertiesForTable = flatProps => {
   // TODO - There may not be any.
   // io.k8s.apimachinery.pkg.apis.meta.v1.Time
@@ -13,29 +26,33 @@ const flatPropertiesForTable = flatProps => {
     .reduce((a, e) => a.concat([ { property: e[0], ...e[1] } ]), []);
 };
 
-const createFindDefinitionByKey = config => key => {
-  // TODO - There may not be one
-  // io.k8s.apimachinery.pkg.apis.meta.v1.Time
-  if(! key)
-    return {};
+/*
+{ '.':
+  [
+    '.apiVersion',
+    '.fullName',
+    '.groups'
+  ]
+}
+*/
+const flatPropertiesSliceForTable = (flatProps, slice) => {
+  //console.log(flatProps);
+  //console.log(slice);
 
-  switch (typeof(key)) {
-    case 'string':
-        return config.definitions.all()[key];
-      break;
+  if(! flatProps)
+    return [];
 
-    case 'object':
-        return config.definitions.getByVersionKind(key);
-      break;
+  if(! slice)
+    return [];
 
-    default:
-       return {};
-      break;
-  }
+  return slice.reduce((a, e) => a.concat([ { property: e, ...flatProps[e] } ]), []);
 };
 
 module.exports = {
   escapeMarkup,
   flatPropertiesForTable,
-  createFindDefinitionByKey
+  flatPropertiesSliceForTable,
+  truncatePath,
+  hasChildren,
+  notRoot
 };

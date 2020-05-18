@@ -1,11 +1,13 @@
 const test = require('tape');
 
 const {
-  flatPropertiesForTable
+  flatPropertiesForTable,
+  flatPropertiesSliceForTable
 } = require ('../templates/helpers');
 
 
 test('template helpers', t => {
+  let output;
 
   const flatProps = {
     key1: {
@@ -18,7 +20,16 @@ test('template helpers', t => {
     }
   }
 
-  const output = flatPropertiesForTable(flatProps);
+  const byPath = {
+    '.': {
+      'abc': true
+    },
+    '.key2': {
+      'def': true
+    }
+  }
+
+  output = flatPropertiesForTable(flatProps);
 
   t.equal(
     output[0].hasOwnProperty('property'),
@@ -29,6 +40,9 @@ test('template helpers', t => {
     output[1].hasOwnProperty('property'),
     true
   );
+
+//  output = flatPropertiesSliceForTable(byPath, '.');
+//  console.log(output);
 
   t.end();
 });

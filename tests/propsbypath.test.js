@@ -6,13 +6,33 @@ const {
 } = require('../lib/properties');
 
 test('getPropertiesByPath', t => {
-  t.plan(9);
+  t.plan(10);
 
   let props;
 
   const { definitions } = require('./specs/prometheus-spec.json');
   const testSpec = definitions['com.coreos.monitoring.v1.Prometheus'];
   const flatPropsOfResource = walkProps({ data: testSpec, definitions });
+
+  // TODO - this works by happenstance; confirm why
+  // Get root paths, but not children
+  props = getPropertiesByPath({
+    properties: flatPropsOfResource, otherPaths: ['.', '.spec', '.spec.containers[]'], reqPath: '.'
+  });
+
+  t.equal(
+    props.includes('.apiVersion'),
+    true);
+  // TODO - This is an array; test succeeds by accident; need .filter on value instead
+  t.equal(
+    !!props.find(v => v.includes('.status.')),
+    false);
+  t.equal(
+    !!props.find(v => v.includes('.spec.containers')),
+    false);
+  t.equal(
+    props.includes('.metadata'),
+    true);
 
   // Get all properties for a path
   props = getPropertiesByPath({
@@ -22,6 +42,17 @@ test('getPropertiesByPath', t => {
   t.equal(
     props.includes('.spec.containers[].env[].name'),
     true);
+
+  // Get all paths starting at the root
+  props = getPropertiesByPath({
+    properties: flatPropsOfResource, reqPath: '.'
+  });
+
+  // Root must be excluded
+  t.equal(
+    props.includes('.'),
+    false
+  );
 
   // Do not get properties for other paths,
   // or children of path if in same tree
@@ -38,25 +69,6 @@ test('getPropertiesByPath', t => {
   t.equal(
     props.includes('.metadata'),
     false);
-
-  // TODO - this works by happenstance; confirm why
-  // Get root paths, but not children
-  props = getPropertiesByPath({
-    properties: flatPropsOfResource, otherPaths: ['.', '.spec', '.spec.containers[]'], reqPath: '.'
-  });
-
-  t.equal(
-    props.includes('.apiVersion'),
-    true);
-  t.equal(
-    props.includes('.status.'),
-    false);
-  t.equal(
-    props.includes('.spec.containers[].'),
-    false);
-  t.equal(
-    props.includes('.metadata'),
-    true);
 
   const wantPaths = [
     '.spec',
@@ -85,6 +97,7 @@ test('getPropertiesByPath', t => {
 
   //console.log(JSON.stringify(propertiesByPath, null, 2))
 
+  // Confirms some value were captured; but are they correct?
   t.equal(
     Object.values(propertiesByPath).every(array => array.length > 0),
     true

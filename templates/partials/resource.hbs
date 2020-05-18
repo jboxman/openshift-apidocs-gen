@@ -1,24 +1,44 @@
 == {{name}} [{{group}}/{{version}}]
 
-{{!--#with (findDefinitionByKey definition)--}}
-
+////
 Description::
   {{description}}
 
 Type::
   `{{type}}`
 
-{{>propertiesTable .}}
-
-{{!--#each relatedProperties--}}
-{{!--#with (findDefinitionByKey .)--}}
-
-// ==== {{kind}} [{{version}}/{{group}}]
-
+////
 {{!-->propertiesTable .--}}
 
-{{!--/with--}}
-{{!--/each--}}
+{{#each specsByPath}}
+{{#with (lookup ../flatSpec @key)}}
+
+{{#if (notRoot @key)}}
+=== {{@key}}
+{{/if}}
+
+Description::
+  {{description}}
+
+Type::
+  `{{type}}`
+{{/with}}
+
+{{#if (hasChildren this)}}
+[cols="1,1,1",options="header"]
+|===
+| Property | Type | Description
+
+{{#each (flatPropertiesSliceForTable ../flatSpec this)}}
+| `{{truncatePath property @../key}}`
+| {{type}}
+| {{{escapeMarkup description}}}
+
+{{/each}}
+|===
+{{/if}}
+
+{{/each}}
 
 === Operations
 
