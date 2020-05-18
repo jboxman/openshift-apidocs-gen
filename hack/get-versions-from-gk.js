@@ -13,6 +13,8 @@ const loadConfig = require('../lib/config');
 if(! process.argv[2])
   process.exit(1);
 
+const groups = {};
+
 // TODO - load definitions only
 // This bootstraps the entire configuration, including operations and fields
 const { definitions } = loadConfig({ specFile: process.argv[2] });
@@ -45,11 +47,38 @@ async function main() {
     // Not currently sorted; it's accidentally correct version order.
     //console.log(defs);
     if(defs.length > 0) {
-      console.log(`- name: ${kind}\n  version: ${defs[0].version}\n  group: ${group}`);
+      if(!groups[group])
+        groups[group] = [];
+
+      groups[group].push({ group, version: defs[0].version, kind });
+      //console.log(`- name: ${kind}\n  version: ${defs[0].version}\n  group: ${group}`);
     }
     else {
-      console.log(`Could not find ${kind}/${group}`);
+      console.error(`Could not find ${kind}/${group}`);
     }
+  }
+
+  // Group by resource group
+  // This is suitable for ./cli.js --resources <resource>
+  for(const grouping in groups) {
+    console.log(`- name: ${grouping}\n  resources:`);
+    for(const resource of groups[grouping]) {
+      console.log(`  - name: ${resource.kind}\n    group: ${resource.group}\n    version: ${resource.version}`);
+    }
+  }
+
+  /*
+  Name: OpenShift REST APIs
+  Dir: rest_api
+  Topics:
+  - Name: API endpoints
+    File: index
+  */
+  // This is suitable for ascii_binder _topic_map.yaml
+
+  for(const grouping in groups) {
+    console.log(`- Name: ${grouping}`);
+    console.log(`  File: ${grouping.replace(/\./g, '-')}`);
   }
 }
 
