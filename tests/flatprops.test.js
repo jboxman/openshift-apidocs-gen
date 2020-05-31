@@ -1,4 +1,5 @@
-const test = require('tape');
+const riteway = require('riteway');
+const { describe } = riteway;
 
 const {
   walkProps
@@ -7,19 +8,26 @@ const {
 // TODO - process multiple specs from the same file
 // to watch the deep clone / reference problem of modifying definitions
 
-test('flatten definition spec', t => {
+describe('walkProps', async assert => {
+
   let definitions;
   let testSpec;
   let flatProps;
+  let given;
 
   ({ definitions } = require('./specs/prometheus-spec.json'));
   testSpec = definitions['com.coreos.monitoring.v1.Prometheus'];
 
   flatProps = walkProps({ data: testSpec, definitions });
 
-  t.equal(
-    Object.keys(flatProps).length,
-    1051);
+  given = 'Prometheus spec';
+
+  assert({
+    given,
+    should: 'recurse all keys',
+    actual: Object.keys(flatProps).length,
+    expected: 1051
+  });
 
   // A string or integer must not be explicitly named
   /*
@@ -32,78 +40,136 @@ test('flatten definition spec', t => {
   },
   */
 
-  t.equal(
-    flatProps.hasOwnProperty('.spec.volumes[].iscsi.portals{}'),
-    false);
-  t.equal(
-    flatProps.hasOwnProperty('.spec.volumes[].iscsi.portals[]'),
-    false);
-  t.equal(
-    flatProps.hasOwnProperty('.spec.volumes[].iscsi.portals'),
-    true);
+  assert({
+    given,
+    should: 'not recognize `.spec.volumes[].iscsi.portals` as array of objects',
+    actual: flatProps.hasOwnProperty('.spec.volumes[].iscsi.portals{}'),
+    expected: false
+  });
 
-  t.equal(
-    typeof flatProps['.metadata.annotations'].description,
-    'string');
-  t.equal(
-    (flatProps['.metadata.annotations'].description || '').length > 0,
-    true);
+  assert({
+    given,
+    should: 'not recognize `.spec.volumes[].iscsi.portals` as an array of arrays',
+    actual: flatProps.hasOwnProperty('.spec.volumes[].iscsi.portals[]'),
+    expected: false
+  });
 
-  t.equal(
-    flatProps['.metadata.annotations'].type,
-    'object (string)');
+  assert({
+    given,
+    should: 'recognize `.spec.volumes[].iscsi.portals` property as without complex child',
+    actual: flatProps.hasOwnProperty('.spec.volumes[].iscsi.portals'),
+    expected: true
+  });
+
+  assert({
+    given,
+    should: 'copy description from $ref as string',
+    actual: typeof flatProps['.metadata.annotations'].description,
+    expected: 'string'
+  });
+
+
+  assert({
+    given,
+    should: 'copy description from $ref',
+    actual: (flatProps['.metadata.annotations'].description || '').length > 0,
+    expected: true
+  });
+
+  assert({
+    given,
+    should: 'recognize object of strings',
+    actual: flatProps['.metadata.annotations'].type,
+    expected: 'object (string)'
+  });
 
   ({ definitions } = require('./specs/storageclass-spec.json'));
   testSpec = definitions['io.k8s.api.storage.v1.StorageClass'];
 
   flatProps = walkProps({ data: testSpec, definitions });
 
-  t.equal(
-    Object.keys(flatProps).length,
-    46);
+  given = 'StorageClass spec';
+
+  assert({
+    given,
+    should: 'recurse all keys',
+    actual: Object.keys(flatProps).length,
+    expected: 46
+  });
 
   ({ definitions } = require('./specs/image-spec.json'));
   testSpec = definitions['com.github.openshift.api.image.v1.Image'];
 
   flatProps = walkProps({ data: testSpec, definitions });
 
-  t.equal(
-    Object.keys(flatProps).length,
-    101);
+  given = 'Image spec';
+
+  assert({
+    given,
+    should: 'recurse all keys',
+    actual: Object.keys(flatProps).length,
+    expected: 101
+  });
+
   // parent must be an array
-  t.equal(
-    flatProps['.signatures[].conditions']['type'],
-    'array');
+  assert({
+    given,
+    should: 'recognize `.signatures[].conditions` as an array',
+    actual: flatProps['.signatures[].conditions']['type'],
+    expected: 'array'
+  });
+
   // child must be an object
-  t.equal(
-    flatProps['.signatures[].conditions[]']['type'],
-    'object');
+  assert({
+    given,
+    should: 'recognize `.signatures[].conditions[]` as an object',
+    actual: flatProps['.signatures[].conditions[]']['type'],
+    expected: 'object'
+  });
 
   ({ definitions } = require('./specs/image-spec.json'));
   testSpec = definitions['com.github.openshift.api.image.v1.ImageStreamLayers'];
 
   flatProps = walkProps({ data: testSpec, definitions });
 
-  t.equal(
-    Object.keys(flatProps).length,
-    43);
+  given = 'ImageStreamLayers spec';
+
+  assert({
+    given,
+    should: 'recurse all keys',
+    actual: Object.keys(flatProps).length,
+    expected: 43
+  });
+
   // Resolve additionalProperties $ref
-  t.equal(
-    ['.blobs{}.size', '.blobs{}.mediaType'].every(prop => flatProps[prop]),
-    true);
+  assert({
+    given,
+    should: 'recognize .blobs{}.* as object properties',
+    actual: ['.blobs{}.size', '.blobs{}.mediaType'].every(prop => flatProps[prop]),
+    expected: true
+  });
+
   // Don't overwritten 'description' with 'description' from $ref
-  t.equal(
-    flatProps['.blobs']['description'],
-    'blobs is a map of blob name to metadata about the blob.');
+  assert({
+    given,
+    should: 'preserve `.blobs` description',
+    actual: flatProps['.blobs']['description'],
+    expected: 'blobs is a map of blob name to metadata about the blob.'
+  });
 
   ({ definitions } = require('./specs/crd-spec.json'));
   testSpec = definitions['io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.CustomResourceDefinition'];
 
   flatProps = walkProps({ data: testSpec, definitions });
 
-  t.equal(
-    Object.keys(flatProps).length,
-    64);
+  given = 'CustomResourceDefinition spec';
 
-  t.end();
+  // Avoid infinite recursion for this CRD
+  assert({
+    given, 
+    should: 'recurse all keys',
+    actual: Object.keys(flatProps).length,
+    expected: 64
+  });
+
 });

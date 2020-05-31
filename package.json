@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "esm": "^3.2.25",
+    "riteway": "^6.1.2",
     "tape": "^4.13.2"
   },
   "jest": {
