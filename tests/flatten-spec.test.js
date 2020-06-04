@@ -1,5 +1,4 @@
-const riteway = require('riteway');
-const { describe } = riteway;
+const { describe } = require('riteway');
 
 const {
   walkProps
@@ -8,7 +7,7 @@ const {
 // TODO - process multiple specs from the same file
 // to watch the deep clone / reference problem of modifying definitions
 
-describe('walkProps', async assert => {
+describe('flattenSpec', async assert => {
 
   let definitions;
   let testSpec;
@@ -157,9 +156,23 @@ describe('walkProps', async assert => {
     expected: 'blobs is a map of blob name to metadata about the blob.'
   });
 
+  {
+    const testSpec = definitions['com.github.openshift.api.image.v1.ImageStreamLayers'];
+    const flatProps = walkProps({ data: testSpec, definitions, resolve: 'image.openshift.io' });
+
+    given = 'ImageStreamLayers spec scoped to image.openshift.io';
+
+    assert({
+      given,
+      should: 'not resolve `.metadata`',
+      actual: flatProps['.metadata']['gvk'],
+      expected: { group: 'meta', version: 'v1', kind: 'ObjectMeta' }
+    });
+  }
+
   ({ definitions } = require('./specs/crd-spec.json'));
   testSpec = definitions['io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.CustomResourceDefinition'];
-
+  
   flatProps = walkProps({ data: testSpec, definitions });
 
   given = 'CustomResourceDefinition spec';
@@ -172,4 +185,33 @@ describe('walkProps', async assert => {
     expected: 64
   });
 
+});
+
+describe('relatedSpecs', async assert => {
+  {
+    const { definitions } = require('./specs/image-spec.json');
+    const testSpec = definitions['com.github.openshift.api.image.v1.ImageStreamLayers'];
+
+    const flatProps = walkProps({ data: testSpec, definitions, resolve: false });
+
+    // TODO - import function
+    const actual = Object.entries(flatProps).reduce((accum, entry) => {
+      if(entry[1].hasOwnProperty('gvk')) {
+        accum.push(entry[1].gvk);
+      }
+      return accum;
+    }, []);
+
+    assert({
+      given: 'ImageStreamLayers spec with unresolved $refs',
+      should: 'assign GVK to each property',
+      actual,
+      expected: [
+        { group: 'image.openshift.io', version: 'v1', kind: 'ImageLayerData' },
+        { group: 'image.openshift.io', version: 'v1', kind: 'ImageBlobReferences' },
+        { group: 'meta', version: 'v1', kind: 'ObjectMeta' },
+      ]
+    })
+
+  }
 });
