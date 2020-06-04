@@ -1,4 +1,4 @@
-
+// TODO - add double newline for asciidoc
 const escapeMarkup = (text = '') => {
   return text.replace(/[|]/g, '\\|');
 };
@@ -48,8 +48,30 @@ const flatPropertiesSliceForTable = (flatProps, slice) => {
   return slice.reduce((a, e) => a.concat([ { property: e, ...flatProps[e] } ]), []);
 };
 
+const createFindDefinitionByKey = config => key => {
+  // TODO - There may not be one
+  // io.k8s.apimachinery.pkg.apis.meta.v1.Time
+  if(! key)
+    return {};
+
+  switch (typeof(key)) {
+    case 'string':
+        return config.definitions.all()[key];
+      break;
+
+    case 'object':
+        return config.definitions.getByVersionKind(key);
+      break;
+
+    default:
+       return {};
+      break;
+  }
+};
+
 module.exports = {
   escapeMarkup,
+  createFindDefinitionByKey,
   flatPropertiesForTable,
   flatPropertiesSliceForTable,
   truncatePath,
