@@ -1,24 +1,55 @@
-== {{name}} [{{group}}/{{version}}]
+= {{name}} [{{group}}/{{version}}]
 
-////
-Description::
-  {{description}}
-
-Type::
-  `{{type}}`
-
-////
-{{!-->propertiesTable .--}}
-
-{{#each specsByPath}}
-{{#with (lookup ../flatSpec @key)}}
+{{#each definition.propertiesByPath}}
+{{#with (lookup ../definition.flatSpec @key)}}
 
 {{#if (notRoot @key)}}
-=== {{@key}}
+.{{@key}}
 {{/if}}
 
 Description::
-  {{description}}
+  {{escapeMarkup description}}
+
+Type::
+  `{{type}}`
+{{/with}}
+
+{{#unless (notRoot @key)}}
+== Specification
+{{/unless}}
+
+{{#if (hasChildren this)}}
+[cols="1,1,1",options="header"]
+|===
+| Property | Type | Description
+
+{{#each (flatPropertiesSliceForTable ../definition.flatSpec this)}}
+| `{{truncatePath property @../key}}`
+| {{type}}
+| {{{escapeMarkup description}}}
+
+{{/each}}
+|===
+{{/if}}
+
+{{/each}}
+
+== Related API objects
+
+{{#each definition.relatedDefinitions}}
+{{#with (findDefinitionByKey .)}}
+
+=== {{name}} [{{group}}/{{version}}]
+
+{{#each propertiesByPath}}
+{{#with (lookup ../flatSpec @key)}}
+
+{{#if (notRoot @key)}}
+.{{@key}}
+{{/if}}
+
+Description::
+  {{escapeMarkup description}}
 
 Type::
   `{{type}}`
@@ -39,13 +70,15 @@ Type::
 {{/if}}
 
 {{/each}}
-
-=== Operations
-
-{{#each operationCategories}}
-
-{{>operationCategory .}}
-
+{{/with}}
 {{/each}}
+
+//== Operations
+
+{{!--#each operationCategories--}}
+
+{{!-->operationCategory .--}}
+
+{{!--/each--}}
 
 {{!--/with--}}
