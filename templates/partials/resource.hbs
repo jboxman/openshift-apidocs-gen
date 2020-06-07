@@ -36,7 +36,7 @@ Type::
 
 == Related API objects
 
-{{#each definition.relatedDefinitions}}
+{{#each (gatherRelatedDefinitions definition.relatedDefinitions)}}
 {{#with (findDefinitionByKey .)}}
 
 === {{name}} [{{group}}/{{version}}]

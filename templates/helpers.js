@@ -48,6 +48,28 @@ const flatPropertiesSliceForTable = (flatProps, slice) => {
   return slice.reduce((a, e) => a.concat([ { property: e, ...flatProps[e] } ]), []);
 };
 
+const createGatherRelatedDefinitions = config => function fn(relatedDefinitions) {
+  return relatedDefinitions.reduce((accum, gvk) => {
+    const definition = config.definitions.getByVersionKind(gvk);
+
+    if(definition) {
+      if(!accum.find(v => (v.group == gvk.group && v.version == gvk.version && v.kind == gvk.kind)))
+        accum.push(gvk);
+
+      if(definition.relatedDefinitions.length > 0) {
+        const uniq = fn(definition.relatedDefinitions).filter(gvk => {
+          return !accum.find(v => (v.group == gvk.group && v.version == gvk.version && v.kind == gvk.kind));
+        });
+  
+        if(uniq.length > 0)
+          accum.push(...uniq);
+      }
+    }
+
+    return accum;
+  }, []);
+};
+
 const createFindDefinitionByKey = config => key => {
   // TODO - There may not be one
   // io.k8s.apimachinery.pkg.apis.meta.v1.Time
@@ -72,6 +94,7 @@ const createFindDefinitionByKey = config => key => {
 module.exports = {
   escapeMarkup,
   createFindDefinitionByKey,
+  createGatherRelatedDefinitions,
   flatPropertiesForTable,
   flatPropertiesSliceForTable,
   truncatePath,
