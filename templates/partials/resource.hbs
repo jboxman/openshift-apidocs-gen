@@ -3,9 +3,9 @@
 {{#each definition.propertiesByPath}}
 {{#with (lookup ../definition.flatSpec @key)}}
 
-{{#if (notRoot @key)}}
+{{#unless (isRoot @key)}}
 .{{@key}}
-{{/if}}
+{{/unless}}
 
 Description::
   {{escapeMarkup description}}
@@ -14,9 +14,9 @@ Type::
   `{{type}}`
 {{/with}}
 
-{{#unless (notRoot @key)}}
+{{#if (isRoot @key)}}
 == Specification
-{{/unless}}
+{{/if}}
 
 {{#if (hasChildren this)}}
 [cols="1,1,1",options="header"]
@@ -44,9 +44,9 @@ Type::
 {{#each propertiesByPath}}
 {{#with (lookup ../flatSpec @key)}}
 
-{{#if (notRoot @key)}}
+{{#unless (isRoot @key)}}
 .{{@key}}
-{{/if}}
+{{/unless}}
 
 Description::
   {{escapeMarkup description}}

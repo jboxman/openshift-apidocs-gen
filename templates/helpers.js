@@ -14,7 +14,7 @@ const truncatePath = (path, parent) => {
   return path.replace(`${parent}.`, '');
 };
 
-const notRoot = key => key == '.' ? false : true;
+const isRoot = key => key == '.' ? true : false;
 
 const flatPropertiesForTable = flatProps => {
   // TODO - There may not be any.
@@ -76,5 +76,5 @@ module.exports = {
   flatPropertiesSliceForTable,
   truncatePath,
   hasChildren,
-  notRoot
+  isRoot
 };
