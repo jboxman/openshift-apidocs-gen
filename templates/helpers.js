@@ -16,6 +16,13 @@ const truncatePath = (path, parent) => {
 
 const isRoot = key => key == '.' ? true : false;
 
+const getRoot = flatProps => {
+  if(! flatProps)
+    return {};
+
+  return flatProps['.'];
+}
+
 const flatPropertiesForTable = flatProps => {
   // TODO - There may not be any.
   // io.k8s.apimachinery.pkg.apis.meta.v1.Time
@@ -99,5 +106,6 @@ module.exports = {
   flatPropertiesSliceForTable,
   truncatePath,
   hasChildren,
+  getRoot,
   isRoot
 };

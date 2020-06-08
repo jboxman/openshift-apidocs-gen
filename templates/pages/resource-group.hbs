@@ -4,5 +4,14 @@
 toc::[]
 
 {{#each resources as |resource|}}
-  {{~>resource resource}}
+{{#with resource}}
+== {{name}} [{{group}}/{{version}}]
+{{#with (getRoot definition.flatSpec)}}
+Description::
+  {{escapeMarkup description}}
+
+Type::
+  `{{type}}`
+{{/with}}
+{{/with}}
 {{/each}}
