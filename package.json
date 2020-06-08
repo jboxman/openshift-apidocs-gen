@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "tape tests/**/*.test.js",
-    "doc": "mkdir -p build/ && asciidoctor -a toc -d book build/index.adoc",
+    "doc": "find build -type f -name '*.adoc' | xargs -L1 -I^ -P1 asciidoctor -a toc -d book ^",
     "clean": "rimraf build/"
   },
   "keywords": [],
