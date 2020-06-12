@@ -1,6 +1,11 @@
 [id="{{id}}"]
 {{#with resource}}
 = {{name}} [{{group}}/{{version}}]
+ifdef::product-title[]
+include::modules/common-attributes.adoc[]
+endif::[]
+
+toc::[]
 
 {{#each definition.propertiesByPath}}
 {{#with (lookup ../definition.flatSpec @key)}}
