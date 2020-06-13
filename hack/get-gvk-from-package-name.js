@@ -12,6 +12,9 @@ const spec = loadApiSpec(process.argv[2]);
 for(const key in spec['definitions']) {
   const { group, version, kind } = util.guessGroupVersionKind(key);
   // io.k8s.apimachinery.pkg.* are internal k8s definitions
+  if(kind && group && version) {
+    console.log(`${group}/${version} ${kind}`);
+  }
   if(!group)
     console.log(`Add new GVK match for definition: "${key}".`);
 }
