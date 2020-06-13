@@ -1,6 +1,6 @@
 [id="{{id}}"]
 {{#with resource}}
-= {{name}} [{{group}}/{{version}}]
+= {{kind}} [{{group}}/{{version}}]
 ifdef::product-title[]
 include::modules/common-attributes.adoc[]
 endif::[]
@@ -46,7 +46,7 @@ Type::
 {{#each (gatherRelatedDefinitions definition.relatedDefinitions)}}
 {{#with (findDefinitionByKey .)}}
 
-=== {{name}} [{{group}}/{{version}}]
+=== {{kind}} [{{group}}/{{version}}]
 
 {{#each propertiesByPath}}
 {{#with (lookup ../flatSpec @key)}}

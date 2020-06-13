@@ -5,7 +5,7 @@ toc::[]
 
 {{#each resources as |resource|}}
 {{#with resource}}
-== {{name}} [{{group}}/{{version}}]
+== {{kind}} [{{group}}/{{version}}]
 {{#with (getRoot definition.flatSpec)}}
 Description::
   {{escapeMarkup description}}

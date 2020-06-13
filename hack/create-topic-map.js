@@ -43,10 +43,10 @@ async function main(resourceFile) {
   for(const { name, resources } of data) {
     let topics = [];
 
-    for(const { name, version, group } of resources) {
+    for(const { kind, version, group } of resources) {
       topics.push({
-        Name: `${name} [${group}/${version}]`,
-        File: replaceWith('-')([ name, group, version ].join(' '))
+        Name: `${kind} [${group}/${version}]`,
+        File: replaceWith('-')([ kind, group, version ].join(' '))
       });
     }
 

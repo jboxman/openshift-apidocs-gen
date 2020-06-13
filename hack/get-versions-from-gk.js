@@ -63,7 +63,7 @@ async function main() {
   for(const grouping in groups) {
     console.log(`- name: ${grouping}\n  resources:`);
     for(const resource of groups[grouping]) {
-      console.log(`  - name: ${resource.kind}\n    group: ${resource.group}\n    version: ${resource.version}`);
+      console.log(`  - kind: ${resource.kind}\n    group: ${resource.group}\n    version: ${resource.version}`);
     }
   }
 
