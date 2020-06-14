@@ -45,22 +45,19 @@
 # io.k8s.kube-aggregator.pkg.apis.apiregistration.v1.APIService
 - rule: "io.k8s.kube-aggregator"
   match: io\.k8s\..+(?:apis\.)?\.(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
-
-# Full domain
-# io.k8s.api.authorization.v1beta1.SelfSubjectAccessReview
-- rule: "io.k8s.api.authorization"
-  match: io\.k8s\.api\.?(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
   groupOverride: <group>.k8s.io
 
+- rule: "io.k8s.api.rbac"
+  match: io\.k8s\.api\.?(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
+  groupOverride: <group>.authorization.k8s.io
+
 # These are legacy groups
-# io.k8s.api.apps.v1.ControllerRevisionList
-# io.k8s.api.batch.v1beta1.CronJobList
-# io.k8s.api.extensions.v1beta1.Ingress
-# io.k8s.api.policy.v1beta1.PodDisruptionBudget
-# io.k8s.api.rbac.v1.ClusterRoleBinding
-# io.k8s.api.core.v1.Binding
+- rule: "io.k8s.api"
+  match: io\.k8s\.api\.?(?<group>(apps|autoscaling|batch|core|extensions|policy|rbac)+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
+
 - rule: "io.k8s.api"
   match: io\.k8s\.api\.?(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
+  groupOverride: <group>.k8s.io
 
 # io.k8s.migration.v1alpha1.StorageStateList
 - rule: "io.k8s"
