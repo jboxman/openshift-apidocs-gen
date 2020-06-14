@@ -215,3 +215,62 @@ describe('relatedSpecs', async assert => {
 
   }
 });
+
+describe('resolveRef', async assert => {
+  const resolveRef = walkProps.resolveRef;
+  var r;
+
+  {
+    const { definitions } = require('./specs/image-spec.json');
+    const testSpec = definitions['com.github.openshift.api.image.v1.Image'];
+
+    assert({
+      given: 'data without `$ref`', 
+      should: 'ignore data without `$ref`',
+      actual: resolveRef({ data: testSpec, definitions, resolve: 'image.openshift.io' }),
+      expected: testSpec
+    });
+
+    assert({
+      given: 'data with `$ref` in specified group', 
+      should: 'resolve `$ref` for specified group',
+      actual: Object.keys(resolveRef({ data: testSpec.properties.dockerImageLayers.items, definitions, resolve: 'image.openshift.io' }).properties),
+      expected: ['mediaType', 'name', 'size']
+    });
+
+    assert({
+      given: 'data with `$ref` not in specified group', 
+      should: 'not resolve `$ref`',
+      actual: resolveRef({ data: testSpec.properties.metadata, definitions, resolve: 'image.openshift.io' }).gvk,
+      expected: { group: 'meta', version: 'v1', kind: 'ObjectMeta' }
+    });
+
+  }
+
+  {
+    const { definitions } = require('./specs/image-spec.json');
+    const testSpec = definitions['com.github.openshift.api.image.v1.ImageImportSpec'];
+
+    assert({
+      given: 'data with `$ref` in core group not matching /(Spec|Status)$/', 
+      should: 'not resolve `$ref`',
+      actual: resolveRef({ data: testSpec.properties.from, definitions, resolve: 'image.openshift.io' }).gvk,
+      expected: { group: 'core', version: 'v1', kind: 'ObjectReference' }
+    });
+
+  }
+
+  {
+    const { definitions } = require('./specs/service-spec.json');
+    const testSpec = definitions['io.k8s.api.core.v1.Service'];
+
+    assert({
+      given: 'data with `$ref` in core group matching /(Spec|Status)$/', 
+      should: 'resolve `$ref`',
+      actual: resolveRef({ data: testSpec.properties.spec, definitions, resolve: 'core' }).description,
+      expected: 'ServiceSpec describes the attributes that a user creates on a service.'
+    });
+
+  }
+
+});
