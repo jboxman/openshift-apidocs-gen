@@ -7,12 +7,12 @@ endif::[]
 
 toc::[]
 
-{{#each definition.propertiesByPath}}
-{{#with (lookup ../definition.flatSpec @key)}}
+{{#each definition.propertiesByPath~}}
+{{~#with (lookup ../definition.flatSpec @key)~}}
 
-{{#unless (isRoot @key)}}
+{{~#unless (isRoot @key)~}}
 .{{@key}}
-{{/unless}}
+{{~/unless}}
 
 Description::
   {{escapeMarkup description}}
@@ -26,67 +26,8 @@ Type::
 {{/if}}
 
 {{#if (hasChildren this)}}
-[cols="1,1,1",options="header"]
-|===
-| Property | Type | Description
-
-{{#each (flatPropertiesSliceForTable ../definition.flatSpec this)}}
-| `{{truncatePath property @../key}}`
-| {{type}}
-| {{{escapeMarkup description}}}
-
-{{/each}}
-|===
+{{>propertiesTable flatSpec=../definition.flatSpec slice=this}}
 {{/if}}
 
-{{/each}}
-
-== Related API objects
-
-{{#each (gatherRelatedDefinitions definition.relatedDefinitions)}}
-{{#with (findDefinitionByKey .)}}
-
-=== {{kind}} [{{group}}/{{version}}]
-
-{{#each propertiesByPath}}
-{{#with (lookup ../flatSpec @key)}}
-
-{{#unless (isRoot @key)}}
-.{{@key}}
-{{/unless}}
-
-Description::
-  {{escapeMarkup description}}
-
-Type::
-  `{{type}}`
-{{/with}}
-
-{{#if (hasChildren this)}}
-[cols="1,1,1",options="header"]
-|===
-| Property | Type | Description
-
-{{#each (flatPropertiesSliceForTable ../flatSpec this)}}
-| `{{truncatePath property @../key}}`
-| {{type}}
-| {{{escapeMarkup description}}}
-
-{{/each}}
-|===
-{{/if}}
-
-{{/each}}
-{{/with}}
-{{/each}}
-
-//== Operations
-
-{{!--#each operationCategories--}}
-
-{{!-->operationCategory .--}}
-
-{{!--/each--}}
-
-{{!--/with--}}
-{{/with}}
+{{~/each~}}
+{{~/with~}}

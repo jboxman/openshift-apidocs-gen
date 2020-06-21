@@ -6,12 +6,14 @@ toc::[]
 {{#each resources as |resource|}}
 {{#with resource}}
 == {{kind}} [{{group}}/{{version}}]
-{{#with (getRoot definition.flatSpec)}}
+
+{{#with (getRoot definition.flatSpec)~}}
 Description::
   {{escapeMarkup description}}
 
 Type::
   `{{type}}`
+
 {{/with}}
 {{/with}}
 {{/each}}

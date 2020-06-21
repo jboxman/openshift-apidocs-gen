@@ -1,11 +1,9 @@
-The following table describes the parameters for the `{{kind}}` object:
-
 [cols="1,1,1",options="header"]
 |===
 | Property | Type | Description
 
-{{#each (flatPropertiesForTable flatSpec)}}
-| `{{property}}`
+{{#each (flatPropertiesSliceForTable flatSpec slice)}}
+| `{{truncatePath property @../key}}`
 | {{type}}
 | {{{escapeMarkup description}}}
 

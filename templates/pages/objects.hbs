@@ -1,0 +1,33 @@
+= Object reference
+
+{{#each .}}
+{{#with (findDefinitionByKey .)}}
+[id="{{../id}}"]
+== {{kind}} [{{group}}/{{version}}]
+
+{{#each propertiesByPath~}}
+{{~#with (lookup ../flatSpec @key)~}}
+
+{{~#unless (isRoot @key)~}}
+.{{@key}}
+{{~/unless}}
+
+Description::
+  {{escapeMarkup description}}
+
+Type::
+  `{{type}}`
+{{/with}}
+
+{{#if (isRoot @key)}}
+[discrete]
+=== Specification
+{{/if}}
+
+{{#if (hasChildren this)}}
+{{>propertiesTable flatSpec=../flatSpec slice=this}}
+{{/if}}
+{{/each}}
+
+{{/with}}
+{{/each}}
