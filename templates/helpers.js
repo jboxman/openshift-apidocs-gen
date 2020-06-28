@@ -1,3 +1,5 @@
+const util = require("../lib/util");
+
 // TODO - add double newline for asciidoc
 const escapeMarkup = (text = '') => {
   return text.replace(/[|]/g, '\\|');
@@ -9,6 +11,8 @@ const hasChildren = children => {
 
   return false;
 };
+
+const isComplex = prop => prop.hasOwnProperty('gvk') ? true : false;
 
 const truncatePath = (path, parent) => {
   return path.replace(`${parent}.`, '');
@@ -98,14 +102,30 @@ const createFindDefinitionByKey = config => key => {
   }
 };
 
+const createLinkToObject = config => prop => {
+  if(!prop.hasOwnProperty('gvk'))
+    return '';
+
+  const ref = config.refs[util.createKey(prop.gvk)];
+  if(ref)
+    return `../${ref.path}/${ref.filename}#${ref.anchor}`;
+
+  return '';
+}
+
 module.exports = {
+  isRoot,
+  isComplex,
+  hasChildren,
+
   escapeMarkup,
+
   createFindDefinitionByKey,
   createGatherRelatedDefinitions,
+  createLinkToObject,
+
   flatPropertiesForTable,
   flatPropertiesSliceForTable,
   truncatePath,
-  hasChildren,
-  getRoot,
-  isRoot
+  getRoot
 };
