@@ -3,7 +3,6 @@
 const program = require('commander');
 
 const fs = require('fs');
-const path = require('path');
 const yaml = require('js-yaml');
 
 const replaceWith = replacer => title => title
@@ -27,9 +26,16 @@ async function main(resourceFile) {
   let data;
 
   const yamlObj = {
-    Name: 'OpenShift REST APIs',
+    Name: 'API reference',
     Dir: 'rest_api',
-    Topics: []
+    Topics: [{
+      Name: 'Common object reference',
+      Dir: 'objects',
+      Topics: [{
+        Name: 'Index',
+        File: `index`
+      }]
+    }]
   };
 
   if(!fs.existsSync(resourceFile))
@@ -42,6 +48,11 @@ async function main(resourceFile) {
 
   for(const { name, resources } of data) {
     let topics = [];
+
+    topics.push({
+        Name: `About ${name}`,
+        File: replaceWith('-')([ name, 'index' ].join(' '))
+    });
 
     for(const { kind, version, group } of resources) {
       topics.push({
@@ -57,7 +68,7 @@ async function main(resourceFile) {
     });
   }
 
-  console.log(yaml.safeDump(yamlObj));
+  console.log(yaml.safeDump(yamlObj, { noArrayIndent: true }));
 }
 
 program.parseAsync(process.argv);
