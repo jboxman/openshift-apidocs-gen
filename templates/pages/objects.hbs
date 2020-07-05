@@ -25,12 +25,12 @@ Type::
   `{{type}}`
 {{/with}}
 
+{{#if (hasChildren this)}}
 {{#if (isRoot @key)}}
 [discrete]
 === Specification
 {{/if}}
 
-{{#if (hasChildren this)}}
 {{>propertiesTable flatSpec=../flatSpec slice=this}}
 {{/if}}
 {{/each}}
