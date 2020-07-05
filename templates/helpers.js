@@ -12,6 +12,13 @@ const hasChildren = children => {
   return false;
 };
 
+const hasRequired = required => {
+  if(Array.isArray(required) && required.length > 0)
+    return true;
+
+  return false;
+};
+
 const isComplex = prop => prop.hasOwnProperty('gvk') ? true : false;
 
 const truncatePath = (path, parent) => {
@@ -117,6 +124,7 @@ module.exports = {
   isRoot,
   isComplex,
   hasChildren,
+  hasRequired,
 
   escapeMarkup,
 

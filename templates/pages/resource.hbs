@@ -19,6 +19,14 @@ Description::
 
 Type::
   `{{type}}`
+
+{{#if (hasRequired required)~}}
+Required::
+{{#each required}}
+  - `{{.}}`
+{{/each}}
+{{~/if}}
+
 {{/with}}
 
 {{#if (isRoot @key)}}
