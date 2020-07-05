@@ -1,6 +1,13 @@
 #!/usr/bin/env node
 
-const loadConfig = require('../lib/config');
+const program = require('commander');
+
+const fs = require('fs');
+const yaml = require('js-yaml');
+
+const loadApiSpec = require('../lib/openapi');
+const { createDefinitions } = require('../lib/config');
+const createDefinitionCollection = require('../lib/models/definitions');
 
 // The OpenShift console outputs a list of {Group,Kind}
 
@@ -8,22 +15,31 @@ const loadConfig = require('../lib/config');
 // available versions. With sorting, the latest
 // version is probably what is offered in OCP-latest.
 
-// $ oc api-resources | hack/get-versions-from-gk.js ...
+const desc = `Output YAML to stdout suitable for an initial resources.yaml file.
 
-if(! process.argv[2])
-  process.exit(1);
+<api_resources> - Specify a file with the output from \`oc api-resources\`
+<openapi_file> - Specify an OpenShift OpenAPI spec JSON file`
+
+program
+  .arguments('<api_resources> <openapi_file>')
+  .description(desc)
+  .action(main);
 
 const groups = {};
+const yamlObj = [];
+async function main(apiResources, oapiSpecFile) {
+  const openApiSpec = {};
+  if(! Object.keys(openApiSpec).length)
+    Object.assign(openApiSpec, loadApiSpec(oapiSpecFile));
 
-// TODO - load definitions only
-// This bootstraps the entire configuration, including operations and fields
-const { definitions } = loadConfig({ specFile: process.argv[2] });
+  const definitions = createDefinitionCollection();
+  createDefinitions({ collection: definitions, spec: openApiSpec['definitions'] });
+  definitions.initialize();
 
-async function main() {
-  let rows = await readStream(process.stdin);
+  let rows = await readStream(fs.createReadStream(apiResources, { encoding: 'utf8' }));
   let columnOffsets;
 
-  if(! rows)
+  if(!rows)
     process.exit(1);
 
   for(const row of rows) {
@@ -36,53 +52,36 @@ async function main() {
 
     let group = row.substring(columnOffsets[2].start, columnOffsets[2].stop).replace(/\s/g, '');
     let kind = row.substring(columnOffsets[4].start, row.length).replace(/\s/g, '');
+    let version;
 
     // The core group presents as an empty field
     // https://kubernetes.io/docs/reference/using-api/api-overview/#api-groups
-    if(!group)
+    if(!group) {
       group = 'core';
-
-    const defs = definitions.getByGroupKind({ group, kind });
-
-    // Not currently sorted; it's accidentally correct version order.
-    //console.log(defs);
-    if(defs.length > 0) {
-      if(!groups[group])
-        groups[group] = [];
-
-      groups[group].push({ group, version: defs[0].version, kind });
-      //console.log(`- name: ${kind}\n  version: ${defs[0].version}\n  group: ${group}`);
     }
-    else {
-      console.error(`Could not find ${kind}/${group}`);
-    }
+
+    // TODO - correct by accident; sorted by version in the spec file
+    ({ version } = definitions.getByGroupKind({ group, kind })[0])
+
+    if(!groups[group])
+      groups[group] = [];
+
+    // Already sorted in `oc api-resources` output
+    groups[group].push({ kind, group, version });
   }
 
-  // Group by resource group
-  // This is suitable for ./cli.js --resources <resource>
-  for(const grouping in groups) {
-    console.log(`- name: ${grouping}\n  resources:`);
-    for(const resource of groups[grouping]) {
-      console.log(`  - kind: ${resource.kind}\n    group: ${resource.group}\n    version: ${resource.version}`);
-    }
-  }
+  Object.entries(groups).reduce((accum, entry) => {
+    accum.push({
+      name: entry[0],
+      resources: entry[1]
+    });
+    return accum;
+  }, yamlObj);
 
-  /*
-  Name: OpenShift REST APIs
-  Dir: rest_api
-  Topics:
-  - Name: API endpoints
-    File: index
-  */
-  // This is suitable for ascii_binder _topic_map.yaml
-
-  for(const grouping in groups) {
-    console.log(`- Name: ${grouping}`);
-    console.log(`  File: ${grouping.replace(/\./g, '-')}`);
-  }
+  console.log(yaml.safeDump(yamlObj, { noArrayIndent: true }));
 }
 
-main();
+program.parseAsync(process.argv);
 
 // https://humanwhocodes.com/snippets/2019/05/nodejs-read-stream-promise/
 function readStream(stream, encoding = "utf8") {
