@@ -23,8 +23,9 @@
   match: com\.github\.operator-framework\..+(?:(operators|apps))\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
   groupOverride: packages.operators.coreos.com
 
+# com.github.operator-framework.api.pkg.lib.version.OperatorVersion
 # com.github.operator-framework.operator-lifecycle-manager.pkg.lib.version.OperatorVersion
-- rule: "com.github.operator-framework.operator-lifecycle-manager.pkg.lib.version.OperatorVersion"
+- rule: "com.github.operator-framework"
   match: com\.github\.operator-framework\..+\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
   groupOverride: packages.operators.coreos.com
 
