@@ -1,5 +1,17 @@
 #!/usr/bin/env node
 
+// This script generates YAML output suitable for an initial resources file.
+// Because all resources are grouped by API group, this is only a starting
+// point. Resources must be further organized by hand. For example:
+
+/*
+- name: whereabouts.cni.cncf.io
+  resources:
+  - kind: IPPool
+    group: whereabouts.cni.cncf.io
+    version: v1alpha1
+*/
+
 const program = require('commander');
 
 const fs = require('fs');
@@ -8,12 +20,7 @@ const yaml = require('js-yaml');
 const loadApiSpec = require('../lib/openapi');
 const { createDefinitions } = require('../lib/config');
 const createDefinitionCollection = require('../lib/models/definitions');
-
-// The OpenShift console outputs a list of {Group,Kind}
-
-// Read GK from STDIN, then lookup if possible all
-// available versions. With sorting, the latest
-// version is probably what is offered in OCP-latest.
+const { readStream, getOffsets } = require('../lib/util');
 
 const desc = `Output YAML to stdout suitable for an initial resources.yaml file.
 
@@ -61,6 +68,11 @@ async function main(apiResources, oapiSpecFile) {
     }
 
     // TODO - correct by accident; sorted by version in the spec file
+    const results = definitions.getByGroupKind({ group, kind });
+    if(results.length <= 0) {
+      console.warn(`Missing definition for ${kind} [${group}] in OpenAPI spec.`);
+      continue;
+    }
     ({ version } = definitions.getByGroupKind({ group, kind })[0])
 
     if(!groups[group])
@@ -82,53 +94,3 @@ async function main(apiResources, oapiSpecFile) {
 }
 
 program.parseAsync(process.argv);
-
-// https://humanwhocodes.com/snippets/2019/05/nodejs-read-stream-promise/
-function readStream(stream, encoding = "utf8") {
-
-  stream.setEncoding(encoding);
-
-  return new Promise((resolve, reject) => {
-    let data = "";
-
-    stream.on("data", chunk => data += chunk);
-    stream.on("end", () => resolve(data.split(/\n/)));
-    stream.on("error", error => reject(error));
-  });
-}
-
-function getOffsets(row) {
-  const columns = {};
-  let begin = false;
-  let columnIdx = 0;
-
-  for(let i = 0; i < row.length; i++) {
-
-    if(begin && (i == (row.length - 1) || !/[A-Z]/.test(row[i]))) {
-
-      if(i == (row.length - 1) || /[A-Z]/.test(row[i+1])) {
-        begin = false;
-
-        columns[columnIdx] = {
-          ...columns[columnIdx],
-          stop: i
-        };
-
-        columnIdx++;
-      }
-
-      continue;
-    }
-
-    if(!begin && /[A-Z]/.test(row[i])) {
-      columns[columnIdx] = {
-        ...columns[columnIdx],
-        start: i
-      };
-
-      begin = true;
-    }
-  }
-
-  return columns;
-}
