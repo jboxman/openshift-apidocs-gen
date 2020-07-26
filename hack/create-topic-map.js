@@ -29,6 +29,10 @@ async function main(resourceFile) {
     Name: 'API reference',
     Dir: 'rest_api',
     Topics: [{
+      Name: 'API list',
+      File: 'index',
+    },
+    {
       Name: 'Common object reference',
       Dir: 'objects',
       Topics: [{

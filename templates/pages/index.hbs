@@ -1,5 +1,7 @@
-= API reference
+= API index
 
 {{#each .}}
-include::{{.}}[leveloffset=+1]
+{{#with (findDefinitionByKey .)}}
+- xref:{{linkToResource this}}[{{kind}}] [{{group}}/{{version}}]
+{{/with}}
 {{/each}}

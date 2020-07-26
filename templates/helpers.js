@@ -120,6 +120,21 @@ const createLinkToObject = config => prop => {
   return '';
 }
 
+/**
+ * Return a function that can link to the specified resource. Assumes that the linking
+ * document is in the parent directory.
+ *
+ * @param {object} config - config instance
+ * @returns {Function} linkToResource
+ */
+const createLinkToResource = config => kgv => {
+  const ref = config.refs[util.createKey(kgv)];
+  if(ref)
+    return `./${ref.path}/${ref.filename}#${ref.anchor}`;
+
+  return '';
+}
+
 module.exports = {
   isRoot,
   isComplex,
@@ -131,6 +146,7 @@ module.exports = {
   createFindDefinitionByKey,
   createGatherRelatedDefinitions,
   createLinkToObject,
+  createLinkToResource,
 
   flatPropertiesForTable,
   flatPropertiesSliceForTable,
