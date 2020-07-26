@@ -1,10 +1,10 @@
 {
-  "name": "gen-api-docs",
+  "name": "openshift-apidocs-gen",
   "version": "1.0.0",
-  "description": "",
+  "description": "OpenShift API reference documentation generator.",
   "main": "index.js",
-  "directories": {
-    "lib": "lib"
+  "bin": {
+    "openshift-apidocs-gen": "./openshift-apidocs-gen"
   },
   "scripts": {
     "test": "tape tests/**/*.test.js",
@@ -12,8 +12,15 @@
     "clean": "rimraf build/"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Jason Boxman <jasonb@edseek.com> (http://linkedin.com/in/jboxman)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jboxman/openshift-apidocs-gen.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jboxman/openshift-apidocs-gen/issues"
+  },
   "dependencies": {
     "commander": "^5.1.0",
     "handlebars": "^4.5.3",
@@ -22,11 +29,7 @@
     "rimraf": "^3.0.2"
   },
   "devDependencies": {
-    "esm": "^3.2.25",
     "riteway": "^6.1.2",
     "tape": "^4.13.2"
-  },
-  "jest": {
-    "testEnvironment": "node"
   }
 }
