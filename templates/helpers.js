@@ -125,7 +125,7 @@ const createLinkToObject = config => prop => {
  * document is in the parent directory.
  *
  * @param {object} config - config instance
- * @returns {Function} linkToResource
+ * @returns {Handlebars.HelperDelegate} linkToResource
  */
 const createLinkToResource = config => kgv => {
   const ref = config.refs[util.createKey(kgv)];
