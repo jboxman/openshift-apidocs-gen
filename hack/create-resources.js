@@ -57,8 +57,11 @@ async function main(apiResources, oapiSpecFile) {
     if(row.length <= 1)
       continue;
 
+    let plural = row.substring(columnOffsets[0].start, columnOffsets[0].stop).replace(/\s/g, '');
     let group = row.substring(columnOffsets[2].start, columnOffsets[2].stop).replace(/\s/g, '');
-    let kind = row.substring(columnOffsets[4].start, row.length).replace(/\s/g, '');
+    let namespaced = row.substring(columnOffsets[3].start, columnOffsets[3].stop).replace(/\s/g, '') == 'true' ?
+      true : false;
+    let kind = row.substring(columnOffsets[4].start).replace(/\s/g, '');
     let version;
 
     // The core group presents as an empty field
@@ -79,7 +82,7 @@ async function main(apiResources, oapiSpecFile) {
       groups[group] = [];
 
     // Already sorted in `oc api-resources` output
-    groups[group].push({ kind, group, version });
+    groups[group].push({ kind, group, version, plural, namespaced });
   }
 
   Object.entries(groups).reduce((accum, entry) => {
