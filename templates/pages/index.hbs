@@ -4,8 +4,13 @@ ifdef::product-title[]
 include::modules/common-attributes.adoc[]
 endif::[]
 
+[cols="1,1",options="header"]
+|===
+^| API ^| API group
 {{#each .}}
 {{#with (findDefinitionByKey .)}}
-- xref:{{linkToResource this}}[{{kind}}] [{{group}}/{{version}}]
+| xref:{{linkToResource this}}[{{kind}}]
+| {{group}}/{{version}}
 {{/with}}
 {{/each}}
+|===
