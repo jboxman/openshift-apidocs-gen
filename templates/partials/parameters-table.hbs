@@ -1,0 +1,16 @@
+{{#if @first}}
+.{{title}} parameters
+[cols="1,1,2",options="header"]
+|===
+| Parameter | Type | Description
+{{/if}}
+| `{{name}}`
+{{#if (isComplex .)}}
+| xref:{{linkToObject .}}[`{{type}}`]
+{{else}}
+| `{{type}}`
+{{/if}}
+| {{description}}
+{{#if @last}}
+|===
+{{/if}}

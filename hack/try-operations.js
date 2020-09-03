@@ -1,148 +1,111 @@
 #!/usr/bin/env node
+const program = require('commander');
 
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 
-const util = require('../lib/util');
 const loadApiSpec = require('../lib/openapi');
-const { typeKey } = require('../lib/constants');
-const {
-  visitResources,
-  getOperationVerbs,
-  isBlacklistedOperation,
-  getOperationId
-} = require('../lib/config');
 
-const spec = loadApiSpec(process.argv[2]);
+const { createDefinitions } = require('../lib/config');
+const createDefinitionCollection = require('../lib/models/definitions');
+const { readStream, getOffsets, buildApiPath } = require('../lib/util');
 
-// Ensure that every resource matches at least one operation.
+program
+  .arguments('<api_resources> <openapi_file>')
+  .description('')
+  .action(main);
 
-const resourcesConfigFile = fs.readFileSync(path.join(__dirname, '../config/resources.yaml'));
-const operationsConfigFile = fs.readFileSync(path.join(__dirname, '../config/operations.yaml'));
-const resourceCategories = yaml.safeLoad(resourcesConfigFile);
-const operationCategories = yaml.safeLoad(operationsConfigFile);
+const allResources = [];
 
-const allOperationTypes = operationCategories.reduce(function(allOpTypes, opCat) {
-  return allOpTypes.concat(opCat.operation_types.reduce((accum, opType) => {
-    return accum.concat(opType);
-  }, []));
-}, []);
+// TODO - refactor duplicate code
+async function main(apiResources, oapiSpecFile) {
+  const openApiSpec = {};
+  if(! Object.keys(openApiSpec).length)
+    Object.assign(openApiSpec, loadApiSpec(oapiSpecFile));
 
-const config = {
-  resourceCategories,
-  definitions: {
-    getByVersionKind: function({ group, version, kind }) {
-      return kinds.find(definition => {
-        return definition.group == group && definition.version == version && definition.kind == kind
-      })
+  const definitions = createDefinitionCollection();
+  createDefinitions({ collection: definitions, spec: openApiSpec['definitions'] });
+  definitions.initialize();
+
+  let rows = await readStream(fs.createReadStream(apiResources, { encoding: 'utf8' }));
+  let columnOffsets;
+
+  if(!rows)
+    process.exit(1);
+
+  for(const row of rows) {
+    if(row == rows[0]) {
+      columnOffsets = getOffsets(row);
+      continue;
+    }
+    if(row.length <= 1)
+      continue;
+
+    let plural = row.substring(columnOffsets[0].start, columnOffsets[0].stop).replace(/\s/g, '');
+    let group = row.substring(columnOffsets[2].start, columnOffsets[2].stop).replace(/\s/g, '');
+    let namespaced = row.substring(columnOffsets[3].start, columnOffsets[3].stop).replace(/\s/g, '') == 'true' ?
+      true : false;
+    let kind = row.substring(columnOffsets[4].start).replace(/\s/g, '');
+    let version;
+
+    // The core group presents as an empty field
+    // https://kubernetes.io/docs/reference/using-api/api-overview/#api-groups
+    if(!group) {
+      group = 'core';
+    }
+
+    const results = definitions.getByGroupKind({ group, kind });
+    if(results.length <= 0) {
+      console.warn(`Missing definition for ${kind} [${group}] in OpenAPI spec.`);
+      continue;
+    }
+
+    for(const { version } of definitions.getByGroupKind({ group, kind })) {
+      allResources.push({ kind, group, version, plural, namespaced });
     }
   }
-}
 
-const kinds = [];
-for(const key in spec['definitions']) {
-  const { group, version, kind } = util.guessGroupVersionKind(key);
-  // io.k8s.apimachinery.pkg.* are internal k8s definitions
-  if(group) {
-    kinds.push({
-      group,
-      version,
-      kind,
-      operations: [],
-      key() {
-        return `${this.group}.${this.version}.${this.kind}`;
-      },
-      get operationGroupName() {
-        // Special case in k8s
-        if(this.group.toLowerCase() == 'rbac') {
-          return 'RbacAuthorization';
-        }
-        // Must return bare word for core k8s APIs
-        if(/io\.k8s\.api\.core/.test(this.group)) {
-          return 'Core';
-        }
-        // Some k8s APIs
-        else if(/io\.k8s\.api/) {
-          return util.titleize(this.group.split('.')[0]);
-        }
+  const found = [];
+  for(const { kind, group, version, plural, namespaced } of allResources) {
+    let matches;
 
-        return this.group;
-      }
+    matches = Object.entries(openApiSpec['paths']).filter(([ path, opts ]) => {
+      return buildApiPath({ plural, group, version }, namespaced).includes(path);
     });
-  }
-}
 
-const definitions = [];
-visitResources(config, function({ resource, definition }) {
-  if(!definition) {
-    console.error(`The definition for ${resource.group}.${resource.version}.${resource.name} is missing!`);
-    // TODO - configurable
-    //process.exit(1);
-    return;
-  }
-  definitions.push(definition);
-});
+    for(const [ path, opts ] of matches) {
+      found.push(path);
 
-const groupMap = {};
-const operationIds = {};
-for(const [path, verbs] of Object.entries(spec['paths'])) {
-  for(const [key, obj] of Object.entries(getOperationVerbs(verbs))) {
+      for(const [ verb, params ] of Object.entries(opts)) {
+        if(verb == 'parameters')
+          continue;
 
-    if(! isBlacklistedOperation(obj)) {
+        let obj;
 
-      if(! obj[typeKey])
-        continue;
+        obj = { 
+          path,
+          verb,
+          kind,
+          group,
+          version,
+          action: params['x-kubernetes-action'],
+          params: { ...params },
+          pathParms: { ...opts.parameters }
+        }
 
-      const gvkGroup = obj[typeKey]['group'];
-      const gvkGroupFirst = util.titleize(gvkGroup.split('.')[0]);
-      const groupId = gvkGroup.split('.').map(util.titleize).join('');
-
-      // io.k8s.api.core
-      if(gvkGroup == "") {
-        groupMap['core'] = 'Core';
-      }
-      // A noop mapping for K8sIo
-      else if(/k8s\.io/.test(gvkGroup)) {
-        groupMap[gvkGroup] = gvkGroupFirst;
-      }
-      else {
-        groupMap[gvkGroup] = groupId;
-      }
-
-      if(obj.operationId) {
-        operationIds[obj.operationId] = false;
+        //if(/\/(status|scale|proxy|finalize|attach|binding|eviction|exec|log|portforward|token|finalize)$/.test(obj.path))
+        //  console.log(obj.path);
       }
     }
 
   }
+
+  const notFound = Object.keys(openApiSpec['paths']).filter(path => {
+    return !found.includes(path) && !/\/$/.test(path);
+  });
+  console.log(JSON.stringify(notFound, null, 2));
+
 }
 
-for(const definition of definitions) {
-  for(const opType of allOperationTypes) {
-    const constructedId = getOperationId({
-      match: opType.match,
-      groupMap,
-      group: definition.operationGroupName,
-      version: definition.version,
-      kind: definition.kind
-    });
-
-    const [ unnamespaced, namespaced ] = ['', 'Namespaced'].map(v => constructedId.replace('(Namespaced)?', v));
-
-    const didMatch = Object.keys(operationIds).some(v => (v == unnamespaced || v == namespaced));
-    if(didMatch)
-      definition.operations.push(opType.name);
-  }
-}
-
-definitions
-  .filter(definition => definition['operations'].length <= 0)
-  .forEach(definition => {
-    console.log(`[${definition.key()}] Failed to associate with any API endpoints!`);
-});
-definitions
-  .filter(definition => definition.operations.length > 0)
-  .forEach(definition => {
-    definition.operations.forEach(opType => console.log(`[${definition.key()}] (${opType})`));
-});
+program.parseAsync(process.argv);

@@ -56,6 +56,11 @@
 - rule: "io.k8s.api"
   match: io\.k8s\.api\.?(?<group>(apps|autoscaling|batch|core|extensions|policy|rbac)+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
 
+# io.k8s.api.flowcontrol.v1alpha1.PriorityLevelConfiguration
+- rule: io.k8s.api.flowcontrol
+  match: io\.k8s\.api\.(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
+  groupOverride: flowcontrol.apiserver.k8s.io
+
 - rule: "io.k8s.api"
   match: io\.k8s\.api\.?(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
   groupOverride: <group>.k8s.io

@@ -5,7 +5,8 @@ const { createKey } = require('../lib/util');
 const {
   flatPropertiesForTable,
   flatPropertiesSliceForTable,
-  createGatherRelatedDefinitions
+  createGatherRelatedDefinitions,
+  sortedByEndpoint
 } = require ('../templates/helpers');
 
 // TODO - format correctly
@@ -55,6 +56,28 @@ describe('template helpers', async assert => {
 //  output = flatPropertiesSliceForTable(byPath, '.');
 //  console.log(output);
 
+});
+
+describe('sortByEndpoint()', async assert => {
+  const paths = {
+    "/api/v1/namespaces/{namespace}/pods": {},
+    "/api/v1/namespaces/{namespace}/pods/{name}": {},
+    "/api/v1/namespaces/{namespace}/pods/{name}/attach": {},
+    "/api/v1/namespaces/{namespace}/pods/{name}/binding": {},
+    "/api/v1/namespaces/{namespace}/pods/{name}/eviction": {},
+    "/api/v1/namespaces/{namespace}/pods/{name}/exec": {},
+    "/api/v1/namespaces/{namespace}/pods/{name}/log": {},
+    "/api/v1/namespaces/{namespace}/pods/{name}/portforward": {},
+    "/api/v1/namespaces/{namespace}/pods/{name}/proxy": {},
+    "/api/v1/namespaces/{namespace}/pods/{name}/proxy/{path}": {},
+    "/api/v1/namespaces/{namespace}/pods/{name}/status": {},
+    "/api/v1/pods": {},
+    "/api/v1/watch/namespaces/{namespace}/pods": {},
+    "/api/v1/watch/namespaces/{namespace}/pods/{name}": {},
+    "/api/v1/watch/pods": {}
+  };
+
+  //console.log(sortedByEndpoint(paths));
 });
 
 describe('relatedDefinitions()', async assert => {

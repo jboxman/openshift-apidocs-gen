@@ -21,6 +21,51 @@ const hasRequired = required => {
 
 const isComplex = prop => prop.hasOwnProperty('gvk') ? true : false;
 
+const sortedByEndpoint = endpoints => {
+  const fn = (a, b) => {
+    if(a.length == b.length)
+      return a.localeCompare(b);
+
+    return a.length - b.length;
+  };
+
+  return Object.keys(endpoints).sort(fn);
+};
+
+const getEndpointOperations = (operations, endpoint) => {
+  if(!Array.isArray(operations))
+    return [];
+
+  if(!endpoint)
+    return [];
+
+  return operations
+    .filter(operation => operation.path == endpoint)
+    .sort((a, b) => a.verb.localeCompare(b.verb));
+};
+
+const getEndpointParameters = (endpoints, endpoint) => {
+  if(Object.prototype.toString.call(endpoints) !== '[object Object]')
+    return [];
+
+  if(!endpoint)
+    return [];
+
+  return endpoints[endpoint];
+};
+
+const parametersFor = (params = [], where = '') => {
+  if(!Array.isArray(params))
+    return [];
+
+  if(!where)
+    return [];
+
+  return params
+    .filter(param => param.in == where)
+    .sort((a, b) => a.name.localeCompare(b.name))
+};
+
 const truncatePath = (path, parent) => {
   return path.replace(`${parent}.`, '');
 };
@@ -71,16 +116,17 @@ const createGatherRelatedDefinitions = config => function fn(relatedDefinitions)
     const definition = config.definitions.getByVersionKind(gvk);
 
     if(definition) {
-      if(!accum.find(v => (v.group == gvk.group && v.version == gvk.version && v.kind == gvk.kind)))
+      if(!accum.find(v => (v.group == gvk.group && v.version == gvk.version && v.kind == gvk.kind))) {
         accum.push(gvk);
 
-      if(definition.relatedDefinitions.length > 0) {
-        const uniq = fn(definition.relatedDefinitions).filter(gvk => {
-          return !accum.find(v => (v.group == gvk.group && v.version == gvk.version && v.kind == gvk.kind));
-        });
-  
-        if(uniq.length > 0)
-          accum.push(...uniq);
+        if(definition.relatedDefinitions.length > 0) {
+          const uniq = fn(definition.relatedDefinitions).filter(gvk => {
+            return !accum.find(v => (v.group == gvk.group && v.version == gvk.version && v.kind == gvk.kind));
+          });
+    
+          if(uniq.length > 0)
+            accum.push(...uniq);
+        }
       }
     }
 
@@ -140,6 +186,11 @@ module.exports = {
   isComplex,
   hasChildren,
   hasRequired,
+
+  sortedByEndpoint,
+  getEndpointOperations,
+  getEndpointParameters,
+  parametersFor,
 
   escapeMarkup,
 
