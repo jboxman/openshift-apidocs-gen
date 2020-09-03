@@ -37,5 +37,73 @@ Required::
 {{>propertiesTable flatSpec=../definition.flatSpec slice=this}}
 {{/if}}
 
-{{~/each~}}
-{{~/with~}}
+{{~/each}}
+
+== API endpoints
+
+The following API endpoints are available:
+
+{{#each (sortedByEndpoint endpoints)}}
+* `{{.}}`
+{{#each (getEndpointOperations ../operations .)}}
+- `{{verb}}`: {{escapeMarkup properties.description}}
+{{/each}}
+{{/each}}
+
+{{#each (sortedByEndpoint endpoints)}}
+
+=== {{.}}
+
+{{#each (parametersFor (getEndpointParameters ../endpoints .) 'path')}}
+{{>parametersTable title='Global path'}}
+{{/each}}
+
+{{#each (parametersFor (getEndpointParameters ../endpoints .) 'query')}}
+{{>parametersTable title='Global guery'}}
+{{/each}}
+
+{{#each (getEndpointOperations ../operations .)}}
+HTTP method::
+  `{{verb}}`
+
+Description::
+  {{escapeMarkup properties.description}}
+
+{{#if parameters}}
+{{#each (parametersFor parameters 'path')}}
+{{>parametersTable title='Path'}}
+{{/each}}
+
+{{#each (parametersFor parameters 'query')}}
+{{>parametersTable title='Query'}}
+{{/each}}
+
+{{#each (parametersFor parameters 'body')}}
+{{>parametersTable title='Body'}}
+{{/each}}
+{{/if}}
+
+{{#if responses}}
+.HTTP responses
+[cols="1,1",options="header"]
+|===
+| HTTP code | Reponse body
+{{#each responses}}
+| {{code}} - {{{description}}}
+{{#if type}}
+{{#if (isComplex .)}}
+| xref:{{linkToObject .}}[`{{type}}`]
+{{else}}
+| `{{type}}`
+{{/if}}
+{{else}}
+| Empty
+{{/if}}
+{{/each}}
+|===
+{{/if}}
+
+{{/each}}
+{{/each}}
+
+{{/with~}}
