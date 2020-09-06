@@ -1,0 +1,941 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Kubernetes",
+    "version": "v1.18.3+77c9a6a"
+  },
+
+  "paths": {},
+
+  "definitions": {
+
+    "io.k8s.apimachinery.pkg.apis.meta.v1.Time": {
+      "description": "Time is a wrapper around time.Time which supports correct marshaling to YAML and JSON.  Wrappers are provided for many of the factory methods that the time package offers.",
+      "type": "string",
+      "format": "date-time"
+    },
+
+    "io.k8s.apimachinery.pkg.apis.meta.v1.OwnerReference": {
+      "description": "OwnerReference contains enough information to let you identify an owning object. An owning object must be in the same namespace as the dependent, or be cluster-scoped, so there is no namespace field.",
+      "type": "object",
+      "required": [
+        "apiVersion",
+        "kind",
+        "name",
+        "uid"
+      ],
+      "properties": {
+        "apiVersion": {
+          "description": "API version of the referent.",
+          "type": "string"
+        },
+        "blockOwnerDeletion": {
+          "description": "If true, AND if the owner has the \"foregroundDeletion\" finalizer, then the owner cannot be deleted from the key-value store until this reference is removed. Defaults to false. To set this field, a user needs \"delete\" permission of the owner, otherwise 422 (Unprocessable Entity) will be returned.",
+          "type": "boolean"
+        },
+        "controller": {
+          "description": "If true, this reference points to the managing controller.",
+          "type": "boolean"
+        },
+        "kind": {
+          "description": "Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#names",
+          "type": "string"
+        },
+        "uid": {
+          "description": "UID of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#uids",
+          "type": "string"
+        }
+      }
+    },
+
+    "io.k8s.apimachinery.pkg.apis.meta.v1.FieldsV1": {
+      "description": "FieldsV1 stores a set of fields in a data structure like a Trie, in JSON format.\n\nEach key is either a '.' representing the field itself, and will always map to an empty set, or a string representing a sub-field or item. The string will follow one of these four formats: 'f:<name>', where <name> is the name of a field in a struct, or key in a map 'v:<value>', where <value> is the exact json formatted value of a list item 'i:<index>', where <index> is position of a item in a list 'k:<keys>', where <keys> is a map of  a list item's key fields to their unique values If a key maps to an empty Fields value, the field that key represents is part of the set.\n\nThe exact format is defined in sigs.k8s.io/structured-merge-diff",
+      "type": "object"
+    },
+
+    "io.k8s.apimachinery.pkg.apis.meta.v1.ManagedFieldsEntry": {
+      "description": "ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource that the fieldset applies to.",
+      "type": "object",
+      "properties": {
+        "apiVersion": {
+          "description": "APIVersion defines the version of this resource that this field set applies to. The format is \"group/version\" just like the top-level APIVersion field. It is necessary to track the version of a field set because it cannot be automatically converted.",
+          "type": "string"
+        },
+        "fieldsType": {
+          "description": "FieldsType is the discriminator for the different fields format and version. There is currently only one possible value: \"FieldsV1\"",
+          "type": "string"
+        },
+        "fieldsV1": {
+          "description": "FieldsV1 holds the first JSON version format as described in the \"FieldsV1\" type.",
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.FieldsV1"
+        },
+        "manager": {
+          "description": "Manager is an identifier of the workflow managing these fields.",
+          "type": "string"
+        },
+        "operation": {
+          "description": "Operation is the type of operation which lead to this ManagedFieldsEntry being created. The only valid values for this field are 'Apply' and 'Update'.",
+          "type": "string"
+        },
+        "time": {
+          "description": "Time is timestamp of when these fields were set. It should always be empty if Operation is 'Apply'",
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Time"
+        }
+      }
+    },
+
+    "io.k8s.apimachinery.pkg.apis.meta.v1.ObjectMeta": {
+      "description": "ObjectMeta is metadata that all persisted resources must have, which includes all objects users must create.",
+      "type": "object",
+      "properties": {
+        "annotations": {
+          "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. They are not queryable and should be preserved when modifying objects. More info: http://kubernetes.io/docs/user-guide/annotations",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "clusterName": {
+          "description": "The name of the cluster which the object belongs to. This is used to distinguish resources with same name and namespace in different clusters. This field is not set anywhere right now and apiserver is going to ignore it if set in create or update request.",
+          "type": "string"
+        },
+        "creationTimestamp": {
+          "description": "CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.\n\nPopulated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata",
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Time"
+        },
+        "deletionGracePeriodSeconds": {
+          "description": "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened. Read-only.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "deletionTimestamp": {
+          "description": "DeletionTimestamp is RFC 3339 date and time at which this resource will be deleted. This field is set by the server when a graceful deletion is requested by the user, and is not directly settable by a client. The resource is expected to be deleted (no longer visible from resource lists, and not reachable by name) after the time in this field, once the finalizers list is empty. As long as the finalizers list contains items, deletion is blocked. Once the deletionTimestamp is set, this value may not be unset or be set further into the future, although it may be shortened or the resource may be deleted prior to this time. For example, a user may request that a pod is deleted in 30 seconds. The Kubelet will react by sending a graceful termination signal to the containers in the pod. After that 30 seconds, the Kubelet will send a hard termination signal (SIGKILL) to the container and after cleanup, remove the pod from the API. In the presence of network partitions, this object may still exist after this timestamp, until an administrator or automated process can determine the resource is fully terminated. If not set, graceful deletion of the object has not been requested.\n\nPopulated by the system when a graceful deletion is requested. Read-only. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata",
+          "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Time"
+        },
+        "finalizers": {
+          "description": "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list. If the deletionTimestamp of the object is non-nil, entries in this list can only be removed. Finalizers may be processed and removed in any order.  Order is NOT enforced because it introduces significant risk of stuck finalizers. finalizers is a shared field, any actor with permission can reorder it. If the finalizer list is processed in order, then this can lead to a situation in which the component responsible for the first finalizer in the list is waiting for a signal (field value, external system, or other) produced by a component responsible for a finalizer later in the list, resulting in a deadlock. Without enforced ordering finalizers are free to order amongst themselves and are not vulnerable to ordering changes in the list.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-kubernetes-patch-strategy": "merge"
+        },
+        "generateName": {
+          "description": "GenerateName is an optional prefix, used by the server, to generate a unique name ONLY IF the Name field has not been provided. If this field is used, the name returned to the client will be different than the name passed. This value will also be combined with a unique suffix. The provided value has the same validation rules as the Name field, and may be truncated by the length of the suffix required to make the value unique on the server.\n\nIf this field is specified and the generated name exists, the server will NOT return a 409 - instead, it will either return 201 Created or 500 with Reason ServerTimeout indicating a unique name could not be found in the time allotted, and the client should retry (optionally after the time indicated in the Retry-After header).\n\nApplied only if Name is not specified. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#idempotency",
+          "type": "string"
+        },
+        "generation": {
+          "description": "A sequence number representing a specific generation of the desired state. Populated by the system. Read-only.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "labels": {
+          "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects. May match selectors of replication controllers and services. More info: http://kubernetes.io/docs/user-guide/labels",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "managedFields": {
+          "description": "ManagedFields maps workflow-id and version to the set of fields that are managed by that workflow. This is mostly for internal housekeeping, and users typically shouldn't need to set or understand this field. A workflow can be the user's name, a controller's name, or the name of a specific apply path like \"ci-cd\". The set of fields is always in the version that the workflow used when modifying the object.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ManagedFieldsEntry"
+          }
+        },
+        "name": {
+          "description": "Name must be unique within a namespace. Is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically. Name is primarily intended for creation idempotence and configuration definition. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/identifiers#names",
+          "type": "string"
+        },
+        "namespace": {
+          "description": "Namespace defines the space within each name must be unique. An empty namespace is equivalent to the \"default\" namespace, but \"default\" is the canonical representation. Not all objects are required to be scoped to a namespace - the value of this field for those objects will be empty.\n\nMust be a DNS_LABEL. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/namespaces",
+          "type": "string"
+        },
+        "ownerReferences": {
+          "description": "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. If this object is managed by a controller, then an entry in this list will point to this controller, with the controller field set to true. There cannot be more than one managing controller.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.OwnerReference"
+          },
+          "x-kubernetes-patch-merge-key": "uid",
+          "x-kubernetes-patch-strategy": "merge"
+        },
+        "resourceVersion": {
+          "description": "An opaque value that represents the internal version of this object that can be used by clients to determine when objects have changed. May be used for optimistic concurrency, change detection, and the watch operation on a resource or set of resources. Clients must treat these values as opaque and passed unmodified back to the server. They may only be valid for a particular resource or set of resources.\n\nPopulated by the system. Read-only. Value must be treated as opaque by clients and . More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency",
+          "type": "string"
+        },
+        "selfLink": {
+          "description": "SelfLink is a URL representing this object. Populated by the system. Read-only.\n\nDEPRECATED Kubernetes will stop propagating this field in 1.20 release and the field is planned to be removed in 1.21 release.",
+          "type": "string"
+        },
+        "uid": {
+          "description": "UID is the unique in time and space value for this object. It is typically generated by the server on successful creation of a resource and is not allowed to change on PUT operations.\n\nPopulated by the system. Read-only. More info: http://kubernetes.io/docs/user-guide/identifiers#uids",
+          "type": "string"
+        }
+      }
+    },
+
+    "com.github.openshift.api.build.v1.Build": {
+    "description": "Build encapsulates the inputs needed to produce a new deployable image, as well as the status of the execution and a reference to the Pod which executed the build.",
+    "properties": {
+      "apiVersion": {
+      "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+      "type": "string"
+      },
+      "kind": {
+      "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+      "type": "string"
+      },
+      "metadata": {
+      "description": "Standard object's metadata.",
+      "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.ObjectMeta"
+      },
+      "spec": {
+      "description": "spec is all the inputs used to execute the build.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.BuildSpec"
+      },
+      "status": {
+      "description": "status is the current status of the build.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.BuildStatus"
+      }
+    },
+    "x-kubernetes-group-version-kind": [
+      {
+      "group": "",
+      "kind": "Build",
+      "version": "v1"
+      },
+      {
+      "group": "build.openshift.io",
+      "kind": "Build",
+      "version": "v1"
+      }
+    ]
+    },
+
+   "com.github.openshift.api.build.v1.BuildSpec": {
+    "description": "BuildSpec has the information to represent a build and also additional information about a build",
+    "required": [
+     "strategy",
+     "triggeredBy"
+    ],
+    "properties": {
+     "completionDeadlineSeconds": {
+      "description": "completionDeadlineSeconds is an optional duration in seconds, counted from the time when a build pod gets scheduled in the system, that the build may be active on a node before the system actively tries to terminate the build; value must be positive integer",
+      "type": "integer",
+      "format": "int64"
+     },
+     "nodeSelector": {
+      "description": "nodeSelector is a selector which must be true for the build pod to fit on a node If nil, it can be overridden by default build nodeselector values for the cluster. If set to an empty map or a map with any values, default build nodeselector values are ignored.",
+      "type": "object",
+      "additionalProperties": {
+       "type": "string"
+      }
+     },
+     "output": {
+      "description": "output describes the Docker image the Strategy should produce.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.BuildOutput"
+     },
+     "postCommit": {
+      "description": "postCommit is a build hook executed after the build output image is committed, before it is pushed to a registry.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.BuildPostCommitSpec"
+     },
+     "resources": {
+      "description": "resources computes resource requirements to execute the build.",
+      "$ref": "#/definitions/io.k8s.api.core.v1.ResourceRequirements"
+     },
+     "revision": {
+      "description": "revision is the information from the source for a specific repo snapshot. This is optional.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.SourceRevision"
+     },
+     "serviceAccount": {
+      "description": "serviceAccount is the name of the ServiceAccount to use to run the pod created by this build. The pod will be allowed to use secrets referenced by the ServiceAccount",
+      "type": "string"
+     },
+     "source": {
+      "description": "source describes the SCM in use.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.BuildSource"
+     },
+     "strategy": {
+      "description": "strategy defines how to perform a build.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.BuildStrategy"
+     },
+     "triggeredBy": {
+      "description": "triggeredBy describes which triggers started the most recent update to the build configuration and contains information about those triggers.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/com.github.openshift.api.build.v1.BuildTriggerCause"
+      }
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.BuildStatus": {
+    "description": "BuildStatus contains the status of a build",
+    "required": [
+     "phase"
+    ],
+    "properties": {
+     "cancelled": {
+      "description": "cancelled describes if a cancel event was triggered for the build.",
+      "type": "boolean"
+     },
+     "completionTimestamp": {
+      "description": "completionTimestamp is a timestamp representing the server time when this Build was finished, whether that build failed or succeeded.  It reflects the time at which the Pod running the Build terminated. It is represented in RFC3339 form and is in UTC.",
+      "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Time"
+     },
+     "config": {
+      "description": "config is an ObjectReference to the BuildConfig this Build is based on.",
+      "$ref": "#/definitions/io.k8s.api.core.v1.ObjectReference"
+     },
+     "duration": {
+      "description": "duration contains time.Duration object describing build time.",
+      "type": "integer",
+      "format": "int64"
+     },
+     "logSnippet": {
+      "description": "logSnippet is the last few lines of the build log.  This value is only set for builds that failed.",
+      "type": "string"
+     },
+     "message": {
+      "description": "message is a human-readable message indicating details about why the build has this status.",
+      "type": "string"
+     },
+     "output": {
+      "description": "output describes the Docker image the build has produced.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.BuildStatusOutput"
+     },
+     "outputDockerImageReference": {
+      "description": "outputDockerImageReference contains a reference to the Docker image that will be built by this build. Its value is computed from Build.Spec.Output.To, and should include the registry address, so that it can be used to push and pull the image.",
+      "type": "string"
+     },
+     "phase": {
+      "description": "phase is the point in the build lifecycle. Possible values are \"New\", \"Pending\", \"Running\", \"Complete\", \"Failed\", \"Error\", and \"Cancelled\".",
+      "type": "string"
+     },
+     "reason": {
+      "description": "reason is a brief CamelCase string that describes any failure and is meant for machine parsing and tidy display in the CLI.",
+      "type": "string"
+     },
+     "stages": {
+      "description": "stages contains details about each stage that occurs during the build including start time, duration (in milliseconds), and the steps that occured within each stage.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/com.github.openshift.api.build.v1.StageInfo"
+      }
+     },
+     "startTimestamp": {
+      "description": "startTimestamp is a timestamp representing the server time when this Build started running in a Pod. It is represented in RFC3339 form and is in UTC.",
+      "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Time"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.BuildStatusOutput": {
+    "description": "BuildStatusOutput contains the status of the built image.",
+    "properties": {
+     "to": {
+      "description": "to describes the status of the built image being pushed to a registry.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.BuildStatusOutputTo"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.BuildStatusOutputTo": {
+    "description": "BuildStatusOutputTo describes the status of the built image with regards to image registry to which it was supposed to be pushed.",
+    "properties": {
+     "imageDigest": {
+      "description": "imageDigest is the digest of the built Docker image. The digest uniquely identifies the image in the registry to which it was pushed.\n\nPlease note that this field may not always be set even if the push completes successfully - e.g. when the registry returns no digest or returns it in a format that the builder doesn't understand.",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.BuildStrategy": {
+    "description": "BuildStrategy contains the details of how to perform a build.",
+    "required": [
+     "type"
+    ],
+    "properties": {
+     "customStrategy": {
+      "description": "customStrategy holds the parameters to the Custom build strategy",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.CustomBuildStrategy"
+     },
+     "dockerStrategy": {
+      "description": "dockerStrategy holds the parameters to the Docker build strategy.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.DockerBuildStrategy"
+     },
+     "jenkinsPipelineStrategy": {
+      "description": "JenkinsPipelineStrategy holds the parameters to the Jenkins Pipeline build strategy.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.JenkinsPipelineBuildStrategy"
+     },
+     "sourceStrategy": {
+      "description": "sourceStrategy holds the parameters to the Source build strategy.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.SourceBuildStrategy"
+     },
+     "type": {
+      "description": "type is the kind of build strategy.",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.BuildTriggerCause": {
+    "description": "BuildTriggerCause holds information about a triggered build. It is used for displaying build trigger data for each build and build configuration in oc describe. It is also used to describe which triggers led to the most recent update in the build configuration.",
+    "properties": {
+     "bitbucketWebHook": {
+      "description": "BitbucketWebHook represents data for a Bitbucket webhook that fired a specific build.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.BitbucketWebHookCause"
+     },
+     "genericWebHook": {
+      "description": "genericWebHook holds data about a builds generic webhook trigger.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.GenericWebHookCause"
+     },
+     "githubWebHook": {
+      "description": "gitHubWebHook represents data for a GitHub webhook that fired a specific build.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.GitHubWebHookCause"
+     },
+     "gitlabWebHook": {
+      "description": "GitLabWebHook represents data for a GitLab webhook that fired a specific build.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.GitLabWebHookCause"
+     },
+     "imageChangeBuild": {
+      "description": "imageChangeBuild stores information about an imagechange event that triggered a new build.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.ImageChangeCause"
+     },
+     "message": {
+      "description": "message is used to store a human readable message for why the build was triggered. E.g.: \"Manually triggered by user\", \"Configuration change\",etc.",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.BuildTriggerPolicy": {
+    "description": "BuildTriggerPolicy describes a policy for a single trigger that results in a new Build.",
+    "required": [
+     "type"
+    ],
+    "properties": {
+     "bitbucket": {
+      "description": "BitbucketWebHook contains the parameters for a Bitbucket webhook type of trigger",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.WebHookTrigger"
+     },
+     "generic": {
+      "description": "generic contains the parameters for a Generic webhook type of trigger",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.WebHookTrigger"
+     },
+     "github": {
+      "description": "github contains the parameters for a GitHub webhook type of trigger",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.WebHookTrigger"
+     },
+     "gitlab": {
+      "description": "GitLabWebHook contains the parameters for a GitLab webhook type of trigger",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.WebHookTrigger"
+     },
+     "imageChange": {
+      "description": "imageChange contains parameters for an ImageChange type of trigger",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.ImageChangeTrigger"
+     },
+     "type": {
+      "description": "type is the type of build trigger",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.ConfigMapBuildSource": {
+    "description": "ConfigMapBuildSource describes a configmap and its destination directory that will be used only at the build time. The content of the configmap referenced here will be copied into the destination directory instead of mounting.",
+    "required": [
+     "configMap"
+    ],
+    "properties": {
+     "configMap": {
+      "description": "configMap is a reference to an existing configmap that you want to use in your build.",
+      "$ref": "#/definitions/io.k8s.api.core.v1.LocalObjectReference"
+     },
+     "destinationDir": {
+      "description": "destinationDir is the directory where the files from the configmap should be available for the build time. For the Source build strategy, these will be injected into a container where the assemble script runs. For the Docker build strategy, these will be copied into the build directory, where the Dockerfile is located, so users can ADD or COPY them during docker build.",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.CustomBuildStrategy": {
+    "description": "CustomBuildStrategy defines input parameters specific to Custom build.",
+    "required": [
+     "from"
+    ],
+    "properties": {
+     "buildAPIVersion": {
+      "description": "buildAPIVersion is the requested API version for the Build object serialized and passed to the custom builder",
+      "type": "string"
+     },
+     "env": {
+      "description": "env contains additional environment variables you want to pass into a builder container.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/io.k8s.api.core.v1.EnvVar"
+      }
+     },
+     "exposeDockerSocket": {
+      "description": "exposeDockerSocket will allow running Docker commands (and build Docker images) from inside the Docker container.",
+      "type": "boolean"
+     },
+     "forcePull": {
+      "description": "forcePull describes if the controller should configure the build pod to always pull the images for the builder or only pull if it is not present locally",
+      "type": "boolean"
+     },
+     "from": {
+      "description": "from is reference to an DockerImage, ImageStreamTag, or ImageStreamImage from which the docker image should be pulled",
+      "$ref": "#/definitions/io.k8s.api.core.v1.ObjectReference"
+     },
+     "pullSecret": {
+      "description": "pullSecret is the name of a Secret that would be used for setting up the authentication for pulling the Docker images from the private Docker registries",
+      "$ref": "#/definitions/io.k8s.api.core.v1.LocalObjectReference"
+     },
+     "secrets": {
+      "description": "secrets is a list of additional secrets that will be included in the build pod",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/com.github.openshift.api.build.v1.SecretSpec"
+      }
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.DockerBuildStrategy": {
+    "description": "DockerBuildStrategy defines input parameters specific to Docker build.",
+    "properties": {
+     "buildArgs": {
+      "description": "buildArgs contains build arguments that will be resolved in the Dockerfile.  See https://docs.docker.com/engine/reference/builder/#/arg for more details.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/io.k8s.api.core.v1.EnvVar"
+      }
+     },
+     "dockerfilePath": {
+      "description": "dockerfilePath is the path of the Dockerfile that will be used to build the Docker image, relative to the root of the context (contextDir).",
+      "type": "string"
+     },
+     "env": {
+      "description": "env contains additional environment variables you want to pass into a builder container.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/io.k8s.api.core.v1.EnvVar"
+      }
+     },
+     "forcePull": {
+      "description": "forcePull describes if the builder should pull the images from registry prior to building.",
+      "type": "boolean"
+     },
+     "from": {
+      "description": "from is reference to an DockerImage, ImageStreamTag, or ImageStreamImage from which the docker image should be pulled the resulting image will be used in the FROM line of the Dockerfile for this build.",
+      "$ref": "#/definitions/io.k8s.api.core.v1.ObjectReference"
+     },
+     "imageOptimizationPolicy": {
+      "description": "imageOptimizationPolicy describes what optimizations the system can use when building images to reduce the final size or time spent building the image. The default policy is 'None' which means the final build image will be equivalent to an image created by the Docker build API. The experimental policy 'SkipLayers' will avoid commiting new layers in between each image step, and will fail if the Dockerfile cannot provide compatibility with the 'None' policy. An additional experimental policy 'SkipLayersAndWarn' is the same as 'SkipLayers' but simply warns if compatibility cannot be preserved.",
+      "type": "string"
+     },
+     "noCache": {
+      "description": "noCache if set to true indicates that the docker build must be executed with the --no-cache=true flag",
+      "type": "boolean"
+     },
+     "pullSecret": {
+      "description": "pullSecret is the name of a Secret that would be used for setting up the authentication for pulling the Docker images from the private Docker registries",
+      "$ref": "#/definitions/io.k8s.api.core.v1.LocalObjectReference"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.DockerStrategyOptions": {
+    "description": "DockerStrategyOptions contains extra strategy options for Docker builds",
+    "properties": {
+     "buildArgs": {
+      "description": "Args contains any build arguments that are to be passed to Docker.  See https://docs.docker.com/engine/reference/builder/#/arg for more details",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/io.k8s.api.core.v1.EnvVar"
+      }
+     },
+     "noCache": {
+      "description": "noCache overrides the docker-strategy noCache option in the build config",
+      "type": "boolean"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.GenericWebHookCause": {
+    "description": "GenericWebHookCause holds information about a generic WebHook that triggered a build.",
+    "properties": {
+     "revision": {
+      "description": "revision is an optional field that stores the git source revision information of the generic webhook trigger when it is available.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.SourceRevision"
+     },
+     "secret": {
+      "description": "secret is the obfuscated webhook secret that triggered a build.",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.GitBuildSource": {
+    "description": "GitBuildSource defines the parameters of a Git SCM",
+    "required": [
+     "uri"
+    ],
+    "properties": {
+     "httpProxy": {
+      "description": "httpProxy is a proxy used to reach the git repository over http",
+      "type": "string"
+     },
+     "httpsProxy": {
+      "description": "httpsProxy is a proxy used to reach the git repository over https",
+      "type": "string"
+     },
+     "noProxy": {
+      "description": "noProxy is the list of domains for which the proxy should not be used",
+      "type": "string"
+     },
+     "ref": {
+      "description": "ref is the branch/tag/ref to build.",
+      "type": "string"
+     },
+     "uri": {
+      "description": "uri points to the source that will be built. The structure of the source will depend on the type of build to run",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.GitHubWebHookCause": {
+    "description": "GitHubWebHookCause has information about a GitHub webhook that triggered a build.",
+    "properties": {
+     "revision": {
+      "description": "revision is the git revision information of the trigger.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.SourceRevision"
+     },
+     "secret": {
+      "description": "secret is the obfuscated webhook secret that triggered a build.",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.GitLabWebHookCause": {
+    "description": "GitLabWebHookCause has information about a GitLab webhook that triggered a build.",
+    "properties": {
+     "revision": {
+      "description": "Revision is the git source revision information of the trigger.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.SourceRevision"
+     },
+     "secret": {
+      "description": "Secret is the obfuscated webhook secret that triggered a build.",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.GitSourceRevision": {
+    "description": "GitSourceRevision is the commit information from a git source for a build",
+    "properties": {
+     "author": {
+      "description": "author is the author of a specific commit",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.SourceControlUser"
+     },
+     "commit": {
+      "description": "commit is the commit hash identifying a specific commit",
+      "type": "string"
+     },
+     "committer": {
+      "description": "committer is the committer of a specific commit",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.SourceControlUser"
+     },
+     "message": {
+      "description": "message is the description of a specific commit",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.ImageChangeCause": {
+    "description": "ImageChangeCause contains information about the image that triggered a build",
+    "properties": {
+     "fromRef": {
+      "description": "fromRef contains detailed information about an image that triggered a build.",
+      "$ref": "#/definitions/io.k8s.api.core.v1.ObjectReference"
+     },
+     "imageID": {
+      "description": "imageID is the ID of the image that triggered a a new build.",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.ImageChangeTrigger": {
+    "description": "ImageChangeTrigger allows builds to be triggered when an ImageStream changes",
+    "properties": {
+     "from": {
+      "description": "from is a reference to an ImageStreamTag that will trigger a build when updated It is optional. If no From is specified, the From image from the build strategy will be used. Only one ImageChangeTrigger with an empty From reference is allowed in a build configuration.",
+      "$ref": "#/definitions/io.k8s.api.core.v1.ObjectReference"
+     },
+     "lastTriggeredImageID": {
+      "description": "lastTriggeredImageID is used internally by the ImageChangeController to save last used image ID for build",
+      "type": "string"
+     },
+     "paused": {
+      "description": "paused is true if this trigger is temporarily disabled. Optional.",
+      "type": "boolean"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.ImageLabel": {
+    "description": "ImageLabel represents a label applied to the resulting image.",
+    "required": [
+     "name"
+    ],
+    "properties": {
+     "name": {
+      "description": "name defines the name of the label. It must have non-zero length.",
+      "type": "string"
+     },
+     "value": {
+      "description": "value defines the literal value of the label.",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.ImageSource": {
+    "description": "ImageSource is used to describe build source that will be extracted from an image or used during a multi stage build. A reference of type ImageStreamTag, ImageStreamImage or DockerImage may be used. A pull secret can be specified to pull the image from an external registry or override the default service account secret if pulling from the internal registry. Image sources can either be used to extract content from an image and place it into the build context along with the repository source, or used directly during a multi-stage Docker build to allow content to be copied without overwriting the contents of the repository source (see the 'paths' and 'as' fields).",
+    "required": [
+     "from"
+    ],
+    "properties": {
+     "as": {
+      "description": "A list of image names that this source will be used in place of during a multi-stage Docker image build. For instance, a Dockerfile that uses \"COPY --from=nginx:latest\" will first check for an image source that has \"nginx:latest\" in this field before attempting to pull directly. If the Dockerfile does not reference an image source it is ignored. This field and paths may both be set, in which case the contents will be used twice.",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "from": {
+      "description": "from is a reference to an ImageStreamTag, ImageStreamImage, or DockerImage to copy source from.",
+      "$ref": "#/definitions/io.k8s.api.core.v1.ObjectReference"
+     },
+     "paths": {
+      "description": "paths is a list of source and destination paths to copy from the image. This content will be copied into the build context prior to starting the build. If no paths are set, the build context will not be altered.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/com.github.openshift.api.build.v1.ImageSourcePath"
+      }
+     },
+     "pullSecret": {
+      "description": "pullSecret is a reference to a secret to be used to pull the image from a registry If the image is pulled from the OpenShift registry, this field does not need to be set.",
+      "$ref": "#/definitions/io.k8s.api.core.v1.LocalObjectReference"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.ImageSourcePath": {
+    "description": "ImageSourcePath describes a path to be copied from a source image and its destination within the build directory.",
+    "required": [
+     "sourcePath",
+     "destinationDir"
+    ],
+    "properties": {
+     "destinationDir": {
+      "description": "destinationDir is the relative directory within the build directory where files copied from the image are placed.",
+      "type": "string"
+     },
+     "sourcePath": {
+      "description": "sourcePath is the absolute path of the file or directory inside the image to copy to the build directory.  If the source path ends in /. then the content of the directory will be copied, but the directory itself will not be created at the destination.",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.JenkinsPipelineBuildStrategy": {
+    "description": "JenkinsPipelineBuildStrategy holds parameters specific to a Jenkins Pipeline build.",
+    "properties": {
+     "env": {
+      "description": "env contains additional environment variables you want to pass into a build pipeline.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/io.k8s.api.core.v1.EnvVar"
+      }
+     },
+     "jenkinsfile": {
+      "description": "Jenkinsfile defines the optional raw contents of a Jenkinsfile which defines a Jenkins pipeline build.",
+      "type": "string"
+     },
+     "jenkinsfilePath": {
+      "description": "JenkinsfilePath is the optional path of the Jenkinsfile that will be used to configure the pipeline relative to the root of the context (contextDir). If both JenkinsfilePath \u0026 Jenkinsfile are both not specified, this defaults to Jenkinsfile in the root of the specified contextDir.",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.SecretBuildSource": {
+    "description": "SecretBuildSource describes a secret and its destination directory that will be used only at the build time. The content of the secret referenced here will be copied into the destination directory instead of mounting.",
+    "required": [
+     "secret"
+    ],
+    "properties": {
+     "destinationDir": {
+      "description": "destinationDir is the directory where the files from the secret should be available for the build time. For the Source build strategy, these will be injected into a container where the assemble script runs. Later, when the script finishes, all files injected will be truncated to zero length. For the Docker build strategy, these will be copied into the build directory, where the Dockerfile is located, so users can ADD or COPY them during docker build.",
+      "type": "string"
+     },
+     "secret": {
+      "description": "secret is a reference to an existing secret that you want to use in your build.",
+      "$ref": "#/definitions/io.k8s.api.core.v1.LocalObjectReference"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.SecretLocalReference": {
+    "description": "SecretLocalReference contains information that points to the local secret being used",
+    "required": [
+     "name"
+    ],
+    "properties": {
+     "name": {
+      "description": "Name is the name of the resource in the same namespace being referenced",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.SecretSpec": {
+    "description": "SecretSpec specifies a secret to be included in a build pod and its corresponding mount point",
+    "required": [
+     "secretSource",
+     "mountPath"
+    ],
+    "properties": {
+     "mountPath": {
+      "description": "mountPath is the path at which to mount the secret",
+      "type": "string"
+     },
+     "secretSource": {
+      "description": "secretSource is a reference to the secret",
+      "$ref": "#/definitions/io.k8s.api.core.v1.LocalObjectReference"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.SourceBuildStrategy": {
+    "description": "SourceBuildStrategy defines input parameters specific to an Source build.",
+    "required": [
+     "from"
+    ],
+    "properties": {
+     "env": {
+      "description": "env contains additional environment variables you want to pass into a builder container.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/io.k8s.api.core.v1.EnvVar"
+      }
+     },
+     "forcePull": {
+      "description": "forcePull describes if the builder should pull the images from registry prior to building.",
+      "type": "boolean"
+     },
+     "from": {
+      "description": "from is reference to an DockerImage, ImageStreamTag, or ImageStreamImage from which the docker image should be pulled",
+      "$ref": "#/definitions/io.k8s.api.core.v1.ObjectReference"
+     },
+     "incremental": {
+      "description": "incremental flag forces the Source build to do incremental builds if true.",
+      "type": "boolean"
+     },
+     "pullSecret": {
+      "description": "pullSecret is the name of a Secret that would be used for setting up the authentication for pulling the Docker images from the private Docker registries",
+      "$ref": "#/definitions/io.k8s.api.core.v1.LocalObjectReference"
+     },
+     "scripts": {
+      "description": "scripts is the location of Source scripts",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.SourceControlUser": {
+    "description": "SourceControlUser defines the identity of a user of source control",
+    "properties": {
+     "email": {
+      "description": "email of the source control user",
+      "type": "string"
+     },
+     "name": {
+      "description": "name of the source control user",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.SourceRevision": {
+    "description": "SourceRevision is the revision or commit information from the source for the build",
+    "required": [
+     "type"
+    ],
+    "properties": {
+     "git": {
+      "description": "Git contains information about git-based build source",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.GitSourceRevision"
+     },
+     "type": {
+      "description": "type of the build source, may be one of 'Source', 'Dockerfile', 'Binary', or 'Images'",
+      "type": "string"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.SourceStrategyOptions": {
+    "description": "SourceStrategyOptions contains extra strategy options for Source builds",
+    "properties": {
+     "incremental": {
+      "description": "incremental overrides the source-strategy incremental option in the build config",
+      "type": "boolean"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.StageInfo": {
+    "description": "StageInfo contains details about a build stage.",
+    "properties": {
+     "durationMilliseconds": {
+      "description": "durationMilliseconds identifies how long the stage took to complete in milliseconds. Note: the duration of a stage can exceed the sum of the duration of the steps within the stage as not all actions are accounted for in explicit build steps.",
+      "type": "integer",
+      "format": "int64"
+     },
+     "name": {
+      "description": "name is a unique identifier for each build stage that occurs.",
+      "type": "string"
+     },
+     "startTime": {
+      "description": "startTime is a timestamp representing the server time when this Stage started. It is represented in RFC3339 form and is in UTC.",
+      "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Time"
+     },
+     "steps": {
+      "description": "steps contains details about each step that occurs during a build stage including start time and duration in milliseconds.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/com.github.openshift.api.build.v1.StepInfo"
+      }
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.StepInfo": {
+    "description": "StepInfo contains details about a build step.",
+    "properties": {
+     "durationMilliseconds": {
+      "description": "durationMilliseconds identifies how long the step took to complete in milliseconds.",
+      "type": "integer",
+      "format": "int64"
+     },
+     "name": {
+      "description": "name is a unique identifier for each build step.",
+      "type": "string"
+     },
+     "startTime": {
+      "description": "startTime is a timestamp representing the server time when this Step started. it is represented in RFC3339 form and is in UTC.",
+      "$ref": "#/definitions/io.k8s.apimachinery.pkg.apis.meta.v1.Time"
+     }
+    }
+   },
+   "com.github.openshift.api.build.v1.WebHookTrigger": {
+    "description": "WebHookTrigger is a trigger that gets invoked using a webhook type of post",
+    "properties": {
+     "allowEnv": {
+      "description": "allowEnv determines whether the webhook can set environment variables; can only be set to true for GenericWebHook.",
+      "type": "boolean"
+     },
+     "secret": {
+      "description": "secret used to validate requests. Deprecated: use SecretReference instead.",
+      "type": "string"
+     },
+     "secretReference": {
+      "description": "secretReference is a reference to a secret in the same namespace, containing the value to be validated when the webhook is invoked. The secret being referenced must contain a key named \"WebHookSecretKey\", the value of which will be checked against the value supplied in the webhook invocation.",
+      "$ref": "#/definitions/com.github.openshift.api.build.v1.SecretLocalReference"
+     }
+    }
+   }
+
+  }
+}

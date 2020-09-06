@@ -1,7 +1,7 @@
 const test = require('tape');
 
 const {
-  walkProps,
+  flattenProps,
   getPropertiesByPath
 } = require('../lib/properties');
 
@@ -12,7 +12,7 @@ test('getPropertiesByPath', t => {
 
   const { definitions } = require('./specs/prometheus-spec.json');
   const testSpec = definitions['com.coreos.monitoring.v1.Prometheus'];
-  const flatPropsOfResource = walkProps({ data: testSpec, definitions });
+  const flatPropsOfResource = flattenProps({ data: testSpec, definitions });
 
   // TODO - this works by happenstance; confirm why
   // Get root paths, but not children
