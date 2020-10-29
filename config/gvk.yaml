@@ -75,6 +75,11 @@
   match: io\.openshift\.operator\.(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
   groupOverride: <group>.operator.openshift.io
 
+# io.openshift.internal.security.v1.RangeAllocation
+- rule: io.openshift.internal
+  match: io\.openshift\.internal\.(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
+  groupOverride: <group>.internal.openshift.io
+
 # io.openshift.operator.v1.Network
 - rule: "io.openshift"
   match: io\.openshift\.(?<group>[^\.]+)\.(?<version>[^\.]+)\.(?<kind>[^\.]+)
