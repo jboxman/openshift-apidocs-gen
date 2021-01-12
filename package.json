@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "commander": "^5.1.0",
+    "firstline": "^2.0.2",
     "handlebars": "^4.5.3",
     "js-yaml": "^3.13.1",
     "node-dir": "^0.1.17",
