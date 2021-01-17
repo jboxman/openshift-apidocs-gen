@@ -3,7 +3,7 @@
 This tool generates documentation for the [OpenShift](https://www.openshift.com/) OpenAPI specification for a running a cluster.
 The APIs included in the OpenAPI spec file are specific to the cluster from which the spec originates.
 
-(If you want immediately access to the [OpenShift API reference documentation](https://docs.openshift.com/container-platform/4.6/rest_api/index.html), it is available as part of the official [OpenShift Container Platform](https://docs.openshift.com) documentation.)
+(If you want to immediately access the [OpenShift API reference documentation](https://docs.openshift.com/container-platform/4.6/rest_api/index.html), it is available as part of the official [OpenShift Container Platform](https://docs.openshift.com) documentation.)
 
 ## Configuration format
 
