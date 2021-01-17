@@ -69,6 +69,9 @@ const parametersFor = (params = [], where = '') => {
 };
 
 const truncatePath = (path, parent) => {
+  if(parent == '.')
+    return path.replace(`.`, '');
+
   return path.replace(`${parent}.`, '');
 };
 
