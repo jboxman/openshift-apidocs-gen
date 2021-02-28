@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+const yaml = require('js-yaml');
 const { describe } = require('riteway');
 
 const {
@@ -7,13 +10,15 @@ const {
 // TODO - process multiple specs from the same file
 // to watch the deep clone / reference problem of modifying definitions
 
+const packageMap =  yaml.safeLoad(fs.readFileSync(path.join(__dirname, 'kgv.yaml'), { encoding: 'utf8' }));
+
 describe('flattenProps', async assert => {
 
   {
     const { definitions } = require('./specs/prometheus-spec.json');
     const testSpec = definitions['com.coreos.monitoring.v1.Prometheus'];
 
-    const flatProps = flattenProps({ data: testSpec, definitions });
+    const flatProps = flattenProps({ data: testSpec, definitions, packageMap });
 
     const given = 'Prometheus spec';
 
@@ -83,7 +88,7 @@ describe('flattenProps', async assert => {
     const { definitions } = require('./specs/storageclass-spec.json');
     const testSpec = definitions['io.k8s.api.storage.v1.StorageClass'];
 
-    const flatProps = flattenProps({ data: testSpec, definitions });
+    const flatProps = flattenProps({ data: testSpec, definitions, packageMap });
 
     const given = 'StorageClass spec';
 
@@ -99,7 +104,7 @@ describe('flattenProps', async assert => {
     const { definitions } = require('./specs/image-spec.json');
     const testSpec = definitions['com.github.openshift.api.image.v1.Image'];
 
-    const flatProps = flattenProps({ data: testSpec, definitions });
+    const flatProps = flattenProps({ data: testSpec, definitions, packageMap });
 
     const given = 'Image spec';
 
@@ -131,7 +136,7 @@ describe('flattenProps', async assert => {
     const { definitions } = require('./specs/image-spec.json');
     const testSpec = definitions['com.github.openshift.api.image.v1.ImageStreamLayers'];
 
-    const flatProps = flattenProps({ data: testSpec, definitions });
+    const flatProps = flattenProps({ data: testSpec, definitions, packageMap });
 
     const given = 'ImageStreamLayers spec';
 
@@ -162,7 +167,7 @@ describe('flattenProps', async assert => {
   {
     const { definitions } = require('./specs/image-spec.json');
     const testSpec = definitions['com.github.openshift.api.image.v1.ImageStreamLayers'];
-    const flatProps = flattenProps({ data: testSpec, definitions, resolve: 'image.openshift.io' });
+    const flatProps = flattenProps({ data: testSpec, definitions, packageMap, resolve: 'image.openshift.io' });
 
     const given = 'ImageStreamLayers spec scoped to image.openshift.io';
 
@@ -178,7 +183,7 @@ describe('flattenProps', async assert => {
     const { definitions } = require('./specs/build-spec.json');
     const testSpec = definitions['com.github.openshift.api.build.v1.Build'];
     
-    const flatProps = flattenProps({ data: testSpec, definitions });
+    const flatProps = flattenProps({ data: testSpec, definitions, packageMap });
 
     const given = 'Build spec';
 
@@ -201,7 +206,7 @@ describe('flattenProps', async assert => {
     const { definitions } = require('./specs/crd-spec.json');
     const testSpec = definitions['io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1.CustomResourceDefinition'];
     
-    const flatProps = flattenProps({ data: testSpec, definitions });
+    const flatProps = flattenProps({ data: testSpec, definitions, packageMap });
 
     const given = 'CustomResourceDefinition spec';
 
@@ -221,7 +226,7 @@ describe('relatedSpecs', async assert => {
     const { definitions } = require('./specs/image-spec.json');
     const testSpec = definitions['com.github.openshift.api.image.v1.ImageStreamLayers'];
 
-    const flatProps = flattenProps({ data: testSpec, definitions, resolve: false });
+    const flatProps = flattenProps({ data: testSpec, definitions, packageMap, resolve: false });
 
     // TODO - import function
     const actual = Object.entries(flatProps).reduce((accum, entry) => {
@@ -255,21 +260,21 @@ describe('resolveRef', async assert => {
     assert({
       given: 'data without `$ref`', 
       should: 'ignore data without `$ref`',
-      actual: resolveRef({ data: testSpec, definitions, resolve: 'image.openshift.io' }),
+      actual: resolveRef({ data: testSpec, definitions, packageMap, resolve: 'image.openshift.io' }),
       expected: testSpec
     });
 
     assert({
       given: 'data with `$ref` in specified group', 
       should: 'resolve `$ref` for specified group',
-      actual: Object.keys(resolveRef({ data: testSpec.properties.dockerImageLayers.items, definitions, resolve: 'image.openshift.io' }).properties),
+      actual: Object.keys(resolveRef({ data: testSpec.properties.dockerImageLayers.items, definitions, packageMap, resolve: 'image.openshift.io' }).properties),
       expected: ['mediaType', 'name', 'size']
     });
 
     assert({
       given: 'data with `$ref` not in specified group', 
       should: 'not resolve `$ref`',
-      actual: resolveRef({ data: testSpec.properties.metadata, definitions, resolve: 'image.openshift.io' }).gvk,
+      actual: resolveRef({ data: testSpec.properties.metadata, definitions, packageMap, resolve: 'image.openshift.io' }).gvk,
       expected: { group: 'meta', version: 'v1', kind: 'ObjectMeta' }
     });
 
@@ -282,7 +287,7 @@ describe('resolveRef', async assert => {
     assert({
       given: 'data with `$ref` in core group not matching /(Spec|Status)$/', 
       should: 'not resolve `$ref`',
-      actual: resolveRef({ data: testSpec.properties.from, definitions, resolve: 'image.openshift.io' }).gvk,
+      actual: resolveRef({ data: testSpec.properties.from, definitions, packageMap, resolve: 'image.openshift.io' }).gvk,
       expected: { group: 'core', version: 'v1', kind: 'ObjectReference' }
     });
 
@@ -295,7 +300,7 @@ describe('resolveRef', async assert => {
     assert({
       given: 'data with `$ref` in core group matching /(Spec|Status)$/', 
       should: 'resolve `$ref`',
-      actual: resolveRef({ data: testSpec.properties.spec, definitions, resolve: 'core' }).description,
+      actual: resolveRef({ data: testSpec.properties.spec, definitions, packageMap, resolve: 'core' }).description,
       expected: 'ServiceSpec describes the attributes that a user creates on a service.'
     });
 
