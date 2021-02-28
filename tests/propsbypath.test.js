@@ -1,9 +1,15 @@
 const test = require('tape');
 
+const fs = require('fs');
+const path = require('path');
+const yaml = require('js-yaml');
+
 const {
   flattenProps,
   getPropertiesByPath
 } = require('../lib/properties');
+
+const packageMap =  yaml.safeLoad(fs.readFileSync(path.join(__dirname, 'kgv.yaml'), { encoding: 'utf8' }));
 
 test('getPropertiesByPath', t => {
   t.plan(10);
@@ -12,7 +18,7 @@ test('getPropertiesByPath', t => {
 
   const { definitions } = require('./specs/prometheus-spec.json');
   const testSpec = definitions['com.coreos.monitoring.v1.Prometheus'];
-  const flatPropsOfResource = flattenProps({ data: testSpec, definitions });
+  const flatPropsOfResource = flattenProps({ data: testSpec, definitions, packageMap });
 
   // TODO - this works by happenstance; confirm why
   // Get root paths, but not children
