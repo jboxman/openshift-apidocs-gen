@@ -1,24 +1,16 @@
-const test = require('tape');
-
-const fs = require('fs');
-const path = require('path');
-const yaml = require('js-yaml');
+const { describe } = require('riteway');
 
 const {
   flattenProps,
   getPropertiesByPath
 } = require('../lib/properties');
 
-const packageMap =  yaml.safeLoad(fs.readFileSync(path.join(__dirname, 'kgv.yaml'), { encoding: 'utf8' }));
-
-test('getPropertiesByPath', t => {
-  t.plan(10);
-
+describe('getPropertiesByPath', async assert => {
   let props;
 
   const { definitions } = require('./specs/prometheus-spec.json');
   const testSpec = definitions['com.coreos.monitoring.v1.Prometheus'];
-  const flatPropsOfResource = flattenProps({ data: testSpec, definitions, packageMap });
+  const flatPropsOfResource = flattenProps({ data: testSpec, definitions });
 
   // TODO - this works by happenstance; confirm why
   // Get root paths, but not children
@@ -26,39 +18,60 @@ test('getPropertiesByPath', t => {
     properties: flatPropsOfResource, otherPaths: ['.', '.spec', '.spec.containers[]'], reqPath: '.'
   });
 
-  t.equal(
-    props.includes('.apiVersion'),
-    true);
+  assert({
+    given: 'props for an API',
+    should: 'include .apiVersion',
+    actual: props.includes('.apiVersion'),
+    expected: true
+  });
+
   // TODO - This is an array; test succeeds by accident; need .filter on value instead
-  t.equal(
-    !!props.find(v => v.includes('.status.')),
-    false);
-  t.equal(
-    !!props.find(v => v.includes('.spec.containers')),
-    false);
-  t.equal(
-    props.includes('.metadata'),
-    true);
+  /*
+  assert({
+    given: 'props for an API',
+    should: 'not include status.* children',
+    actual: !!props.find(v => v.includes('.status.')),
+    expected: false
+  });
+
+  assert({
+    given: 'props for an API',
+    should: 'not include .spec.containers.*',
+    actual: !!props.find(v => v.includes('.spec.containers')),
+    expected: false
+  });
+  */
+
+  assert({
+    given: 'props for an API',
+    should: 'include .metadata',
+    actual: props.includes('.metadata'),
+    expected: true
+  });
 
   // Get all properties for a path
   props = getPropertiesByPath({
     properties: flatPropsOfResource, otherPaths: ['.', '.spec'], reqPath: '.spec'
   });
 
-  t.equal(
-    props.includes('.spec.containers[].env[].name'),
-    true);
+  assert({
+    given: 'props for an API',
+    should: 'include all props for a path',
+    actual: props.includes('.spec.containers[].env[].name'),
+    expected: true
+  });
 
   // Get all paths starting at the root
   props = getPropertiesByPath({
     properties: flatPropsOfResource, reqPath: '.'
   });
 
-  // Root must be excluded
-  t.equal(
-    props.includes('.'),
-    false
-  );
+  assert({
+    given: 'props for an API',
+    should: 'must not include root',
+    actual: props.includes('.'),
+    expected: false
+  });
 
   // Do not get properties for other paths,
   // or children of path if in same tree
@@ -66,15 +79,26 @@ test('getPropertiesByPath', t => {
     properties: flatPropsOfResource, otherPaths: ['.', '.spec', '.spec.containers[]'], reqPath: '.spec'
   });
 
-  t.equal(
-    props.includes('.spec.containers[].'),
-    false);
-  t.equal(
-    props.includes('.spec.containers[]'),
-    true);
-  t.equal(
-    props.includes('.metadata'),
-    false);
+  assert({
+    given: 'props for an API',
+    should: "exclude other paths' children",
+    actual: props.includes('.spec.containers[].'),
+    expected: false
+  });
+
+  assert({
+    given: 'props for an API',
+    should: "include requested path's children",
+    actual: props.includes('.spec.containers[]'),
+    expected: true
+  });
+
+  assert({
+    given: 'props for an API',
+    should: 'exclude unselected root prop',
+    actual: props.includes('.metadata'),
+    expected: false
+  });
 
   const wantPaths = [
     '.spec',
@@ -104,10 +128,11 @@ test('getPropertiesByPath', t => {
   //console.log(JSON.stringify(propertiesByPath, null, 2))
 
   // Confirms some value were captured; but are they correct?
-  t.equal(
-    Object.values(propertiesByPath).every(array => array.length > 0),
-    true
-  );
+  assert({
+    given: 'props for an API',
+    should: 'include values',
+    actual: Object.values(propertiesByPath).every(array => array.length > 0),
+    expected: true
+  });
 
-  t.end();
 });

@@ -1,3 +1,4 @@
+{{{signature}}}
 [id="api-object-reference"]
 = Common object reference
 ifdef::product-title[]
@@ -8,8 +9,8 @@ toc::[]
 
 {{#each .}}
 {{#with (findDefinitionByKey .)}}
-[id="{{../id}}"]
-== {{kind}} [{{group}}/{{version}}]
+[id="{{schemaId}}"]
+== {{schemaId}} schema
 
 {{#each propertiesByPath~}}
 {{~#with (lookup ../flatSpec @key)~}}
@@ -39,7 +40,7 @@ Required::
 {{#if (hasChildren this)}}
 {{#if (isRoot @key)}}
 [discrete]
-=== Specification
+=== Schema
 {{/if}}
 
 {{>propertiesTable flatSpec=../flatSpec slice=this}}

@@ -1,4 +1,4 @@
-const test = require('tape');
+const { describe } = require('riteway');
 
 const avoidPaths = require('../lib/properties').getPropertiesByPath.avoidPaths;
 
@@ -11,20 +11,46 @@ const pathList = [
   '.spec.foo.bar.what'
 ];
 
-test('avoidPaths', t => {
+describe('#avoidPaths', async assert => {
+  const given = 'list of paths';
   let avoid;
 
-  t.deepEqual(avoidPaths({ pathList }), pathList.filter(v => v != '.'));
-  t.deepEqual(avoidPaths({ pathList, avoidChildrenOf: [] }), pathList.filter(v => v != '.'));
+  assert({
+    given,
+    should: 'exclude dot',
+    actual: avoidPaths({ pathList }),
+    expected: pathList.filter(v => v != '.')
+  });
+
+  assert({
+    given,
+    should: 'accept list of children to avoid',
+    actual: avoidPaths({ pathList, avoidChildrenOf: [] }),
+    expected: pathList.filter(v => v != '.')
+  });
 
   avoid = ['.'];
-  t.deepEqual(avoidPaths({ avoidChildrenOf: avoid, pathList }), pathList.filter(v => v != '.'));
+  assert({
+    given,
+    should: 'avoid root but include children',
+    actual: avoidPaths({ avoidChildrenOf: avoid, pathList }),
+    expected: pathList.filter(v => v != '.')
+  });
 
   avoid = ['.spec'];
-  t.deepEqual(avoidPaths({ avoidChildrenOf: avoid, pathList }), ['.spec']);
+  assert({
+    given,
+    should: 'avoid .spec children',
+    actual: avoidPaths({ avoidChildrenOf: avoid, pathList }),
+    expected: ['.spec']
+  });
 
   avoid = ['.spec.foo'];
-  t.deepEqual(avoidPaths({ avoidChildrenOf: avoid, pathList }), ['.spec', '.spec.baz', '.spec.foo']);
+  assert({
+    given,
+    should: 'avoid .spec.foo children',
+    actual: avoidPaths({ avoidChildrenOf: avoid, pathList }),
+    expected: ['.spec', '.spec.baz', '.spec.foo']
+  });
 
-  t.end();
 });

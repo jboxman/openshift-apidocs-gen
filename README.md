@@ -3,7 +3,7 @@
 This tool generates documentation for the [OpenShift](https://www.openshift.com/) OpenAPI specification for a running a cluster.
 The APIs included in the OpenAPI spec file are specific to the cluster from which the spec originates.
 
-(If you want to immediately access the [OpenShift API reference documentation](https://docs.openshift.com/container-platform/4.6/rest_api/index.html), it is available as part of the official [OpenShift Container Platform](https://docs.openshift.com) documentation.)
+(If you want to immediately access the [OpenShift API reference documentation](https://docs.openshift.com/container-platform/4.9/rest_api/index.html), it is available as part of the official [OpenShift Container Platform](https://docs.openshift.com) documentation.)
 
 ## Configuration format
 
@@ -24,7 +24,7 @@ with each object describing a related set of APIs.
 
 Every key is required.
 
-The values for the keys `kind`, `group`, `version`, `plural`, and `namespaced` are found in the output of `oc api-resources` on recent versions of OpenShift based on Kubernetes v1.20.
+The values for the keys `kind`, `group`, and `version` are found in the output of `oc api-resources` on recent versions of OpenShift based on Kubernetes v1.20.
 
 ```yaml
 - name: Authorization APIs
@@ -32,22 +32,16 @@ The values for the keys `kind`, `group`, `version`, `plural`, and `namespaced` a
   - kind: LocalResourceAccessReview
     group: authorization.openshift.io
     version: v1
-    plural: localresourceaccessreviews
-    namespaced: true
 - name: Autoscale APIs
   resources:
   - kind: ClusterAutoscaler
     group: autoscaling.openshift.io
     version: v1
-    plural: clusterautoscalers
-    namespaced: false
 ```
-
-For convenience, the script `hack/create-resources.js` automatically generates the previous YAML output for a given OpenAPI spec file.
 
 ## How to install
 
-This tool is written in JavaScript and depends on NodeJS to run.
+This tool is written in JavaScript and depends on Node.JS to run.
 
 *Prerequisites*
 
@@ -56,7 +50,7 @@ This tool is written in JavaScript and depends on NodeJS to run.
 *Procedure*
 
 ```
-npm i -g openshift-apidocs-gen
+npm i -g @jboxman/openshift-apidocs-gen
 ```
 
 ## CLI help

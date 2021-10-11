@@ -21,7 +21,7 @@ const hasRequired = required => {
   return false;
 };
 
-const isComplex = prop => prop.hasOwnProperty('gvk') ? true : false;
+const isComplex = prop => prop.hasOwnProperty('$ref') ? true : false;
 
 const sortedByEndpoint = endpoints => {
   const fn = (a, b) => {
@@ -65,7 +65,7 @@ const parametersFor = (params = [], where = '') => {
 
   return params
     .filter(param => param.in == where)
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .sort((a, b) => a.name.localeCompare(b.name));
 };
 
 const truncatePath = (path, parent) => {
@@ -116,29 +116,6 @@ const flatPropertiesSliceForTable = (flatProps, slice) => {
   return slice.reduce((a, e) => a.concat([ { property: e, ...flatProps[e] } ]), []);
 };
 
-const createGatherRelatedDefinitions = config => function fn(relatedDefinitions) {
-  return relatedDefinitions.reduce((accum, gvk) => {
-    const definition = config.definitions.getByVersionKind(gvk);
-
-    if(definition) {
-      if(!accum.find(v => (v.group == gvk.group && v.version == gvk.version && v.kind == gvk.kind))) {
-        accum.push(gvk);
-
-        if(definition.relatedDefinitions.length > 0) {
-          const uniq = fn(definition.relatedDefinitions).filter(gvk => {
-            return !accum.find(v => (v.group == gvk.group && v.version == gvk.version && v.kind == gvk.kind));
-          });
-    
-          if(uniq.length > 0)
-            accum.push(...uniq);
-        }
-      }
-    }
-
-    return accum;
-  }, []);
-};
-
 const createFindDefinitionByKey = config => key => {
   // TODO - There may not be one
   // io.k8s.apimachinery.pkg.apis.meta.v1.Time
@@ -160,11 +137,9 @@ const createFindDefinitionByKey = config => key => {
   }
 };
 
-const createLinkToObject = config => prop => {
-  if(!prop.hasOwnProperty('gvk'))
-    return '';
-
-  const ref = config.refs[util.createKey(prop.gvk)];
+const createLinkToObject = config => schemaProps => {
+  //if(!schemaProps.type) console.log(`${schemaProps['$ref']}:${schemaProps.type}`);
+  const ref = config.refs[schemaProps['$ref'].replace('#/definitions/', '')];
   if(ref)
     return `../${ref.path}/${ref.filename}#${ref.anchor}`;
 
@@ -178,8 +153,8 @@ const createLinkToObject = config => prop => {
  * @param {object} config - config instance
  * @returns {Handlebars.HelperDelegate} linkToResource
  */
-const createLinkToResource = config => kgv => {
-  const ref = config.refs[util.createKey(kgv)];
+const createLinkToResource = config => obj => {
+  const ref = config.refs[obj.schemaId];
   if(ref)
     return `./${ref.path}/${ref.filename}#${ref.anchor}`;
 
@@ -202,7 +177,6 @@ module.exports = {
   escapeMarkup,
 
   createFindDefinitionByKey,
-  createGatherRelatedDefinitions,
   createLinkToObject,
   createLinkToResource,
 
