@@ -1,13 +1,13 @@
 {
   "name": "openshift-apidocs-gen",
-  "version": "1.0.6",
+  "version": "2.0.0",
   "description": "OpenShift API reference documentation generator.",
-  "main": "index.js",
+  "main": "lib/index.js",
   "bin": {
     "openshift-apidocs-gen": "./openshift-apidocs-gen"
   },
   "scripts": {
-    "test": "tape tests/**/*.test.js",
+    "test": "riteway tests/**/*.test.js",
     "doc": "find build -type f -name '*.adoc' | xargs -L1 -I^ -P1 asciidoctor -a toc -d book ^",
     "clean": "rimraf build/"
   },
@@ -34,7 +34,6 @@
     "rimraf": "^3.0.2"
   },
   "devDependencies": {
-    "riteway": "^6.1.2",
-    "tape": "^4.13.2"
+    "riteway": "^6.1.2"
   }
 }

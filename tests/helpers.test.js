@@ -5,7 +5,6 @@ const { createKey } = require('../lib/util');
 const {
   flatPropertiesForTable,
   flatPropertiesSliceForTable,
-  createGatherRelatedDefinitions,
   sortedByEndpoint
 } = require ('../templates/helpers');
 
@@ -80,6 +79,8 @@ describe('sortByEndpoint()', async assert => {
   //console.log(sortedByEndpoint(paths));
 });
 
+// This is based on specId now
+/*
 describe('relatedDefinitions()', async assert => {
   // mock config
   const config = {
@@ -148,3 +149,4 @@ describe('relatedDefinitions()', async assert => {
   });
 
 });
+*/
