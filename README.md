@@ -1,9 +1,14 @@
 # OpenShift OpenAPI reference documentation generator
 
-This tool generates documentation for the [OpenShift](https://www.openshift.com/) OpenAPI specification for a running a cluster.
-The APIs included in the OpenAPI spec file are specific to the cluster from which the spec originates.
+This tool generates documentation for the
+[OpenShift](https://www.openshift.com/) OpenAPI specification for a running a
+cluster. The APIs included in the OpenAPI spec file are specific to the cluster
+from which the spec originates.
 
-(If you want to immediately access the [OpenShift API reference documentation](https://docs.openshift.com/container-platform/4.9/rest_api/index.html), it is available as part of the official [OpenShift Container Platform](https://docs.openshift.com) documentation.)
+(If you want to immediately access the [OpenShift API reference
+documentation](https://docs.openshift.com/container-platform/4.9/rest_api/index.html),
+it is available as part of the official [OpenShift Container
+Platform](https://docs.openshift.com) documentation.)
 
 ## Configuration format
 
@@ -14,8 +19,6 @@ Only uncommented keys are supported in the current release.
 version: 2
 outputDir: build
 #apisToHide: []
-#apiSupportLevels: {}
-#packageMap: {}
 apiMap: []
 ```
 
@@ -24,7 +27,10 @@ with each object describing a related set of APIs.
 
 Every key is required.
 
-The values for the keys `kind`, `group`, and `version` are found in the output of `oc api-resources` on recent versions of OpenShift based on Kubernetes v1.20.
+The values for the keys `kind`, `group`, and `version` are found in the output
+of `oc api-resources` on recent versions of OpenShift based on Kubernetes v1.20.
+For 'core' APIs, such as the Pod API, no group is specified as the group
+internally is empty.
 
 ```yaml
 - name: Authorization APIs
@@ -41,7 +47,7 @@ The values for the keys `kind`, `group`, and `version` are found in the output o
 
 ## How to install
 
-This tool is written in JavaScript and depends on Node.JS to run.
+This tool is written in JavaScript and depends on Node.js to run.
 
 *Prerequisites*
 
@@ -62,55 +68,52 @@ openshift-apidocs-gen --help
 Usage: openshift-apidocs-gen [options] [command]
 
 Options:
-  -h, --help                             display help for command
+  -h, --help                          display help for command
 
 Commands:
-  build [options] <oapiSpecFile>         Build the Asciidoc source for the OpenShift API reference documentation
-  topic-map [resource_map]               Output YAML to stdout suitable for inclusion in an AsciiBinder _topic_map.yml file
-  changelog [options] [oapiSpecFile]     Output a changelog to stdout for a specified resource map
-  verify-rules [options] [oapiSpecFile]  Output a list of API resources in an OpenShift OpenAPI spec file
-  help [command]                         display help for command
-```
+  build [options] <oApiSpecFile>      Build the AsciiDoc source for the OpenShift API reference documentation
+  topic-map [options]                 Output YAML to stdout suitable for inclusion in an AsciiBinder _topic_map.yml file
+  changelog [options] <oApiSpecFile>  Output a changelog to stdout for an `apiMap`
+  create-resources <oApiSpecFile>     Output an `apiMap` array in YAML to stdout
+  help [command]                      display help for command
+  ```
 
 ## Typical usage
 
-The following procedure reflects typical usage. For each new release of OpenShift, the `apiMap` must be adjusted accordingly as APIs are added and API versions increment, or APIs are dropped.
+The following procedure reflects typical usage. For each new release of
+OpenShift, the `apiMap` must be adjusted accordingly as APIs are added and API
+versions incremented, or APIs are dropped.
 
 *Prerequisites*
 
-* [Asciidoctor](https://asciidoctor.org) (either Ruby or JavaScript build)
+* [Asciidoctor](https://asciidoctor.org)
 * `jq` [binary](https://stedolan.github.io/jq/)
 
 *Procedure*
 
 1. Log in to an OpenShift cluster with `cluster-admin` privileges.
 
-1. Run `oc get --raw /openapi/v2 | jq . > /tmp/openshift-openapi-<version>-<yyyymmdd>.json`.
+1. Run `oc get --raw /openapi/v2 | jq . > openapi.json`.
 
-1. Run `oc api-resources > /tmp/api-resources-<version>-<yyyymmdd>.txt`.
-
-1. Confirm that no package matching rules are missing:
+1. Create an empty configuration:
 
    ```
-   openshift-apidocs-gen verify-rules -q /tmp/<openshift_apis>.json
+   echo "version: 2
+   outputDir: build
+   apisToHide: []
+   apiMap:" > config.yaml
    ```
-
-   Currently, if a new rule is necessary, this software needs to be updated before the API documentation can be generated. Otherwise, the API documentation related to the missing rules cannot be generated.
 
 1. Generate an API map:
 
    ```
-   hack/create-resources.js /tmp/<api_resources>.txt /tmp/<openshift_apis>.json > /tmp/map.yaml
+   openshift-apidocs-gen create-resources openapi.json >> config.yaml
    ```
-
-1. Create a configuration file and populate the `apiMap` key with the YAML from `map.yaml` generated in the previous step.
-
-   A legacy mode supports using the YAML as-is, without the `version: v2` configuration keys, but support for this may be deprecated and removed in the future.
 
 1. Generate the API docs:
 
    ```
-   openshift-apidocs-gen build --map <config>.yaml /tmp/<openshift_apis>.json
+   openshift-apidocs-gen build -c config.yaml openapi.json
    ```
 
 1. Build the HTML documentation, such as with the following command:
@@ -121,4 +124,5 @@ The following procedure reflects typical usage. For each new release of OpenShif
 
 ## Known issues
 
-For known issues, refer to [GitHub](https://github.com/jboxman/openshift-apidocs-gen/issues).
+For known issues, refer to
+[GitHub](https://github.com/jboxman/openshift-apidocs-gen/issues).

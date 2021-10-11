@@ -1,128 +1,68 @@
 version: 2
 outputDir: build
-apiSupportLevels:
-- apiGroup: openshift\.io$
-  supportLevels:
-  - apiVersion: v\d+
-    level: 1
-  - apiVersion: v\d+beta\d+
-    level: 2
-  - apiVersion: v\d+alpha\d+
-    level: 4
+apisToHide: []
 apiMap:
 - name: Metadata APIs
   resources:
   - kind: Binding
-    group: core
     version: v1
-    plural: bindings
-    namespaced: true
   - kind: ComponentStatus
-    group: core
     version: v1
-    plural: componentstatuses
-    namespaced: false
   - kind: ConfigMap
-    group: core
     version: v1
-    plural: configmaps
-    namespaced: true
   - kind: ControllerRevision
     group: apps
     version: v1
-    plural: controllerrevisions
-    namespaced: true
   - kind: Event
     group: events.k8s.io
     version: v1
-    plural: events
-    namespaced: true
   - kind: Event
-    group: core
     version: v1
-    plural: events
-    namespaced: true
   - kind: Lease
     group: coordination.k8s.io
     version: v1
-    plural: leases
-    namespaced: true
   - kind: Namespace
-    group: core
     version: v1
-    plural: namespaces
-    namespaced: false
 - name: Project APIs
   resources:
   - kind: Project
     group: project.openshift.io
     version: v1
-    plural: projects
-    namespaced: false
   - kind: ProjectRequest
     group: project.openshift.io
     version: v1
-    plural: projectrequests
-    namespaced: false
 - name: Workloads APIs
   resources:
   - kind: BuildConfig
     group: build.openshift.io
     version: v1
-    plural: buildconfigs
-    namespaced: true
   - kind: Build
     group: build.openshift.io
     version: v1
-    plural: builds
-    namespaced: true
   - kind: CronJob
     group: batch
     version: v1beta1
-    plural: cronjobs
-    namespaced: true
   - kind: DaemonSet
     group: apps
     version: v1
-    plural: daemonsets
-    namespaced: true
   - kind: Deployment
     group: apps
     version: v1
-    plural: deployments
-    namespaced: true
   - kind: DeploymentConfig
     group: apps.openshift.io
     version: v1
-    plural: deploymentconfigs
-    namespaced: true
   - kind: Job
     group: batch
     version: v1
-    plural: jobs
-    namespaced: true
   - kind: Pod
-    group: core
     version: v1
-    plural: pods
-    namespaced: true
   - kind: ReplicationController
-    group: core
     version: v1
-    plural: replicationcontrollers
-    namespaced: true
   - kind: PersistentVolume
-    group: core
     version: v1
-    plural: persistentvolumes
-    namespaced: false
   - kind: ReplicaSet
     group: apps
     version: v1
-    plural: replicasets
-    namespaced: true
   - kind: StatefulSet
     group: apps
     version: v1
-    plural: statefulsets
-    namespaced: true
