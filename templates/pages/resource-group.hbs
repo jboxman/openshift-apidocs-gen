@@ -9,7 +9,7 @@ toc::[]
 
 {{#each resources as |resource|}}
 {{#with resource}}
-== {{kind}} [{{group}}/{{version}}]
+== {{kind}} [{{displayGroupVersion version group}}]
 
 {{#with (getRoot definition.flatSpec)~}}
 Description::
