@@ -7,6 +7,12 @@ const escapeMarkup = (text = '') => {
   return text.replace(/[|]/g, '\\|');
 };
 
+const displayGroupVersion = (version, group) => {
+  if(!version) return '';
+  if(!group) return version;
+  return `${group}/${version}`;
+};
+
 const hasChildren = children => {
   if(Array.isArray(children) && children.length > 0)
     return true;
@@ -175,6 +181,7 @@ module.exports = {
   parametersFor,
 
   escapeMarkup,
+  displayGroupVersion,
 
   createFindDefinitionByKey,
   createLinkToObject,

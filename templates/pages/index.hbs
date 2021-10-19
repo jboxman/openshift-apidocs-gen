@@ -11,7 +11,7 @@ endif::[]
 {{#each .}}
 {{#with (findDefinitionByKey .)}}
 | xref:{{linkToResource this}}[{{kind}}]
-| {{group}}/{{version}}
+| {{displayGroupVersion version group}}
 {{/with}}
 {{/each}}
 |===
