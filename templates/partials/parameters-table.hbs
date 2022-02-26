@@ -6,7 +6,11 @@
 {{/if}}
 | `{{name}}`
 {{#if (isComplex .)}}
+{{#if (linkToObject .)}}
 | xref:{{linkToObject .}}[`{{type}}`] schema
+{{else}}
+| `{{type}}` schema
+{{/if}}
 {{else}}
 | `{{type}}`
 {{/if}}
