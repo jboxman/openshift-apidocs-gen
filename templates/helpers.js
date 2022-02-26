@@ -143,6 +143,7 @@ const createFindDefinitionByKey = config => key => {
   }
 };
 
+// TODO: https://github.com/jboxman/openshift-apidocs-gen/issues/43
 const createLinkToObject = config => schemaProps => {
   //if(!schemaProps.type) console.log(`${schemaProps['$ref']}:${schemaProps.type}`);
   const ref = config.refs[schemaProps['$ref'].replace('#/definitions/', '')];
