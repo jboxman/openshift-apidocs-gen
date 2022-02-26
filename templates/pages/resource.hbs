@@ -1,4 +1,5 @@
 {{{signature}}}
+:_content-type: ASSEMBLY
 [id="{{id}}"]
 {{#with resource}}
 = {{kind}} [{{displayGroupVersion version group}}]
@@ -96,7 +97,11 @@ Description::
 | {{code}} - {{{description}}}
 {{#if type}}
 {{#if (isComplex .)}}
+{{#if (linkToObject .)}}
 | xref:{{linkToObject .}}[`{{type}}`] schema
+{{else}}
+| `{{type}}` schema
+{{/if}}
 {{else}}
 | `{{type}}`
 {{/if}}
